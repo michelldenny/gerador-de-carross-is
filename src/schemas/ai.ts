@@ -13,6 +13,16 @@ export const generateCarouselInputSchema = z
     cta: z.string().trim().min(3).max(300),
     format: z.enum(["vertical", "square", "story"]),
     imageOption: z.string().trim().min(1).max(100),
+    niche: z.string().trim().max(150).optional(),
+    notes: z.string().trim().max(2_000).optional(),
+    visualStyle: z.string().trim().max(100).optional(),
+    imageSource: z.string().trim().max(100).optional(),
+    imageCount: z.number().int().min(0).max(10).optional(),
+    primaryColor: z.string().trim().max(30).optional(),
+    secondaryColor: z.string().trim().max(30).optional(),
+    accentColor: z.string().trim().max(30).optional(),
+    backgroundColor: z.string().trim().max(30).optional(),
+    fontFamily: z.string().trim().max(100).optional(),
   })
   .superRefine((input, context) => {
     if (input.editorialMode === "editorial" && input.slideCount !== 9) {
@@ -38,11 +48,22 @@ export const aiCarouselResponseSchema = z.object({
     targetAudience: z.string(),
     tone: z.string(),
     mainMessage: z.string(),
+    promise: z.string().optional(),
   }),
   caption: z.object({
     text: z.string(),
     hashtags: z.array(z.string()),
   }),
+  evidence: z.array(z.object({
+    id: z.string(),
+    claim: z.string(),
+    status: z.enum(["verified", "unverified", "user-provided"]),
+    sourceTitle: z.string().optional(),
+    sourceUrl: z.string().url().optional(),
+    publisher: z.string().optional(),
+    publicationDate: z.string().optional(),
+    accessedAt: z.string().optional(),
+  })).optional(),
   slides: z.array(
     z.object({
       order: z.number().int().positive(),
@@ -59,6 +80,13 @@ export const aiCarouselResponseSchema = z.object({
         "comparison",
         "cta-brand",
       ]),
+      role: z.enum(["hook", "mechanism", "evidence", "expansion", "application", "direction", "closing", "cta"]).optional(),
+      blocks: z.array(z.object({
+        id: z.string(),
+        role: z.enum(["label", "headline", "body", "evidence", "bridge", "cta"]),
+        text: z.string(),
+        evidenceIds: z.array(z.string()).optional(),
+      })).optional(),
       title: z.string().optional(),
       subtitle: z.string().optional(),
       body: z.string().optional(),

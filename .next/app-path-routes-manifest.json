@@ -1,16 +1,16 @@
 {
   "/_not-found/page": "/_not-found",
   "/api/ai/carousels/route": "/api/ai/carousels",
-  "/page": "/",
   "/render/projects/[projectId]/slides/[slideId]/page": "/render/projects/[projectId]/slides/[slideId]",
+  "/page": "/",
   "/(app)/brands/page": "/brands",
-  "/(app)/dashboard/page": "/dashboard",
   "/(app)/files/page": "/files",
+  "/(app)/dashboard/page": "/dashboard",
   "/(app)/projects/[projectId]/editor/page": "/projects/[projectId]/editor",
   "/(app)/help/page": "/help",
   "/(app)/projects/[projectId]/preview/page": "/projects/[projectId]/preview",
   "/(app)/projects/new/page": "/projects/new",
-  "/(app)/settings/page": "/settings",
+  "/(app)/projects/page": "/projects",
   "/(app)/templates/page": "/templates",
-  "/(app)/projects/page": "/projects"
+  "/(app)/settings/page": "/settings"
 }

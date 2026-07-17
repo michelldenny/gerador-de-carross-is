@@ -358,6 +358,16 @@ function NewProjectForm() {
         cta: formData.cta,
         format: formData.format,
         imageOption: formData.imageOption,
+        niche: formData.niche,
+        notes: formData.notes,
+        visualStyle: formData.visualStyle,
+        imageSource: formData.imageSource,
+        imageCount: formData.imageCount,
+        primaryColor: formData.primaryColor,
+        secondaryColor: formData.secondaryColor,
+        accentColor: formData.accentColor,
+        backgroundColor: formData.backgroundColor,
+        fontFamily: formData.fontFamily,
       });
 
       for (const s of stepsSim) {
@@ -365,7 +375,8 @@ function NewProjectForm() {
         setGenerationState(s.progress, s.msg, true);
       }
 
-      const aiResponse = await aiResponsePromise;
+      const generationResult = await aiResponsePromise;
+      const aiResponse = generationResult.carousel;
       const newProjectId = `proj-${Date.now()}`;
 
       // Salvar nova marca na store se solicitado
@@ -459,6 +470,11 @@ function NewProjectForm() {
         updatedAt: "Agora mesmo",
         format: formData.format,
         creationMode: formData.editorialMode,
+        generationMetadata: {
+          trace: generationResult.trace,
+          validation: generationResult.validation,
+          generatedAt: new Date().toISOString(),
+        },
       };
 
       addProject(newProject);

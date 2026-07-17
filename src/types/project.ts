@@ -1,5 +1,9 @@
 import { Slide } from "./slide";
-import type { EditorialMode } from "./ai";
+import type {
+  CarouselValidationResult,
+  EditorialMode,
+  GenerationTrace,
+} from "./ai";
 
 export type CarouselFormat = "vertical" | "square" | "story";
 
@@ -17,4 +21,9 @@ export interface Project {
   updatedAt: string;
   format: CarouselFormat;
   creationMode?: EditorialMode;
+  generationMetadata?: {
+    trace: GenerationTrace;
+    validation: CarouselValidationResult;
+    generatedAt: string;
+  };
 }

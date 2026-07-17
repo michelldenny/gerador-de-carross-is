@@ -1,24 +1,22 @@
-import type { AICarouselResponse, GenerateCarouselInput } from "@/types";
-
-export interface ValidationViolation {
-  code: string;
-  severity: "error" | "warning";
-  slide?: number;
-  field?: string;
-  message: string;
-  kind: "deterministic" | "heuristic";
-}
-
-export interface CarouselValidationResult {
-  valid: boolean;
-  violations: ValidationViolation[];
-}
+import type {
+  AICarouselResponse,
+  CarouselValidationResult,
+  GenerateCarouselInput,
+  ValidationViolation,
+} from "@/types";
 
 const FORBIDDEN_PATTERNS = [
   { code: "AI_SLOP_BINARY", pattern: /n[aã]o [ée] .{1,80},? [ée] .{1,80}/i },
   { code: "AI_SLOP_CHANGES_EVERYTHING", pattern: /e isso muda tudo/i },
   { code: "AI_SLOP_GENERIC_WORLD", pattern: /em um mundo onde/i },
   { code: "AI_SLOP_SWIPE", pattern: /(continue|arrast[ae]|swipe).{0,30}(pr[oó]ximo|lado|ver mais)/i },
+  { code: "AI_SLOP_END_OF_DAY", pattern: /(ao final do dia|no fim das contas)/i },
+  { code: "AI_SLOP_QUESTION_REMAINS", pattern: /(a pergunta que fica|a quest[aã]o [ée]|o ponto [ée])/i },
+  { code: "AI_SLOP_DISCOVER", pattern: /\b(descubra|conheça)\b/i },
+  { code: "AI_SLOP_NEED_TO_KNOW", pattern: /tudo (?:o )?que voc[eê] precisa saber/i },
+  { code: "AI_SLOP_INCREASINGLY", pattern: /cada vez mais/i },
+  { code: "AI_SLOP_GENERIC_FORM", pattern: /de forma (?:clara|consistente|natural)/i },
+  { code: "AI_SLOP_FORCED_PARALLEL", pattern: /\bmenos .{1,50}[.!;]\s*mais\b/i },
 ];
 
 function textFields(slide: AICarouselResponse["slides"][number]) {
@@ -27,6 +25,11 @@ function textFields(slide: AICarouselResponse["slides"][number]) {
     ["subtitle", slide.subtitle],
     ["body", slide.body],
     ["cta", slide.cta],
+    ["highlight", slide.highlight],
+    ["image.description", slide.image?.description],
+    ["image.searchTermPt", slide.image?.searchTermPt],
+    ["image.searchTermEn", slide.image?.searchTermEn],
+    ...((slide.blocks ?? []).map((block) => [`blocks.${block.id}`, block.text])),
     ...((slide.listItems ?? []).map((item, index) => [`listItems.${index}`, item])),
   ] as Array<[string, string | undefined]>;
 }
@@ -37,6 +40,11 @@ export function validateCarousel(
 ): CarouselValidationResult {
   const violations: ValidationViolation[] = [];
   const expectedCount = input.editorialMode === "quick" ? 5 : input.slideCount;
+  const verifiedEvidence = new Set(
+    (carousel.evidence ?? [])
+      .filter((evidence) => evidence.status === "verified" || evidence.status === "user-provided")
+      .map((evidence) => evidence.id)
+  );
 
   if (carousel.slides.length !== expectedCount) {
     violations.push({
@@ -73,9 +81,13 @@ export function validateCarousel(
         }
       }
       if (/\b\d+(?:[.,]\d+)?\s*(?:%|milh(?:ão|ões)|bilh(?:ão|ões)|R\$)\b/i.test(value)) {
+        const fieldEvidenceIds = slide.blocks
+          ?.filter((block) => `blocks.${block.id}` === field)
+          .flatMap((block) => block.evidenceIds ?? []) ?? [];
+        const hasEvidence = fieldEvidenceIds.some((id) => verifiedEvidence.has(id));
         violations.push({
           code: "POSSIBLE_UNSOURCED_CLAIM",
-          severity: "warning",
+          severity: input.editorialMode === "editorial" && !hasEvidence ? "error" : "warning",
           slide: slide.order,
           field,
           message: "Possível dado factual; exige evidência antes de publicação",
@@ -84,6 +96,26 @@ export function validateCarousel(
       }
     }
   });
+
+  const globalTextFields: Array<[string, string]> = [
+    ["strategy.mainMessage", carousel.strategy.mainMessage],
+    ["strategy.promise", carousel.strategy.promise ?? ""],
+    ["caption.text", carousel.caption.text],
+    ...carousel.caption.hashtags.map((hashtag, index) => [`caption.hashtags.${index}`, hashtag] as [string, string]),
+  ];
+  for (const [field, value] of globalTextFields) {
+    for (const forbidden of FORBIDDEN_PATTERNS) {
+      if (forbidden.pattern.test(value)) {
+        violations.push({
+          code: forbidden.code,
+          severity: input.editorialMode === "editorial" ? "error" : "warning",
+          field,
+          message: `Padrão editorial proibido encontrado em ${field}`,
+          kind: "deterministic",
+        });
+      }
+    }
+  }
 
   if (carousel.slides.at(-1)?.type !== "cta") {
     violations.push({

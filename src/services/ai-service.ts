@@ -1,26 +1,23 @@
-import type { AICarouselResponse, GenerateCarouselInput, GenerationTrace } from "@/types";
-import type { CarouselValidationResult } from "@/server/ai/validators/carousel-validator";
+import type { GenerateCarouselInput, GenerateCarouselResult } from "@/types";
 import { aiCarouselResponseSchema } from "@/schemas";
-
-interface GenerateCarouselApiResponse {
-  carousel: AICarouselResponse;
-  validation: CarouselValidationResult;
-  trace: GenerationTrace;
-}
 
 export async function generateCarouselWithAI(
   input: GenerateCarouselInput
-): Promise<AICarouselResponse> {
+): Promise<GenerateCarouselResult> {
   const response = await fetch("/api/ai/carousels", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  const payload = (await response.json()) as Partial<GenerateCarouselApiResponse> & {
+  const payload = (await response.json()) as Partial<GenerateCarouselResult> & {
     error?: string;
   };
   if (!response.ok || !payload.carousel) {
     throw new Error(payload.error ?? "Falha ao gerar carrossel");
   }
-  return aiCarouselResponseSchema.parse(payload.carousel);
+  return {
+    carousel: aiCarouselResponseSchema.parse(payload.carousel),
+    validation: payload.validation!,
+    trace: payload.trace!,
+  };
 }

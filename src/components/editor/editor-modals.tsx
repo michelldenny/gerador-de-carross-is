@@ -81,9 +81,9 @@ export function EditorModals({ projectId }: EditorModalsProps) {
   const handleExport = async () => {
     setIsExporting(true);
     setExportProgress(0);
-    setExportStatusText("Iniciando renderização de slides...");
+    setExportStatusText("Iniciando captura dos slides...");
 
-    await exportProjectSlides(
+    const result = await exportProjectSlides(
       projectId,
       {
         format: exportFormat,
@@ -100,8 +100,22 @@ export function EditorModals({ projectId }: EditorModalsProps) {
     );
 
     setIsExporting(false);
-    setExportModal(false);
-    addNotification("Exportado com sucesso", `Seu carrossel foi empacotado em formato ${exportFormat.toUpperCase()}.`, "success");
+
+    if (result.success) {
+      setExportModal(false);
+      addNotification(
+        "Exportado com sucesso",
+        `Slide exportado em formato ${exportFormat.toUpperCase()}. Verifique sua pasta de downloads.`,
+        "success"
+      );
+    } else {
+      setExportStatusText("Erro na exportação. Tente novamente.");
+      addNotification(
+        "Falha na exportação",
+        "Não foi possível capturar o slide. Certifique-se de que o editor está aberto.",
+        "warning"
+      );
+    }
   };
 
   const currentPreviewSlide = project.slides[activePreviewIdx] || project.slides[0];
@@ -324,15 +338,47 @@ export function EditorModals({ projectId }: EditorModalsProps) {
               </div>
             ) : (
               /* Export Progress status loader */
-              <div className="space-y-4 text-center py-6">
-                <div className="relative w-12 h-12 mx-auto">
-                  <div className="w-12 h-12 border-4 border-slate-100 rounded-full" />
-                  <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-800">{exportStatusText}</p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{exportProgress}% concluído</p>
-                </div>
+              <div className="space-y-4 text-center py-4">
+                {exportProgress < 100 || exportStatusText.startsWith("Erro") ? (
+                  <>
+                    {!exportStatusText.startsWith("Erro") ? (
+                      <div className="relative w-12 h-12 mx-auto">
+                        <div className="w-12 h-12 border-4 border-slate-100 rounded-full" />
+                        <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 mx-auto rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500">
+                        <Download size={20} />
+                      </div>
+                    )}
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-800">{exportStatusText}</p>
+                      {!exportStatusText.startsWith("Erro") && (
+                        <>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{exportProgress}% concluído</p>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="h-full bg-violet-600 rounded-full transition-all duration-300"
+                              style={{ width: `${exportProgress}%` }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {exportStatusText.startsWith("Erro") && (
+                      <button
+                        onClick={() => {
+                          setIsExporting(false);
+                          setExportProgress(0);
+                          setExportStatusText("");
+                        }}
+                        className="text-xs font-bold text-violet-600 hover:text-violet-700 underline underline-offset-2 transition-colors"
+                      >
+                        Tentar Novamente
+                      </button>
+                    )}
+                  </>
+                ) : null}
               </div>
             )}
           </div>

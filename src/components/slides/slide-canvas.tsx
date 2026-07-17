@@ -20,7 +20,7 @@ export function SlideCanvas({
   showSafeArea = false,
   children,
 }: SlideCanvasProps) {
-  // Estilo do wrapper externo para reservar o espaço físico escalado corretamento no layout HTML
+  // Estilo do wrapper externo para reservar o espaço físico escalado corretamente no layout HTML
   const containerStyle: React.CSSProperties = {
     width: `${width * scale}px`,
     height: `${height * scale}px`,
@@ -45,7 +45,12 @@ export function SlideCanvas({
 
   return (
     <div style={containerStyle} className="select-none relative shrink-0">
-      <div style={canvasStyle} className="bg-white text-slate-800">
+      <div
+        style={canvasStyle}
+        className="bg-white text-slate-800"
+        // Atributo de dados para localização pelo serviço de exportação
+        data-slide-canvas={mode === "editor" ? "active" : undefined}
+      >
         <SlideSafeArea showGrid={isEditor && showSafeArea}>
           {children}
         </SlideSafeArea>

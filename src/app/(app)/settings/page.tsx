@@ -7,7 +7,14 @@ import { User, Shield, CreditCard, Bell } from "lucide-react";
 
 export default function SettingsPage() {
   const { addNotification } = useUiStore();
-  const { register, handleSubmit } = useForm({
+  interface SettingsFormData {
+    name: string;
+    email: string;
+    autosave: boolean;
+    notifications: boolean;
+  }
+
+  const { register, handleSubmit } = useForm<SettingsFormData>({
     defaultValues: {
       name: "Alex Rivera",
       email: "alex.rivera@design.co",
@@ -16,7 +23,7 @@ export default function SettingsPage() {
     },
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: SettingsFormData) => {
     addNotification("Configurações salvas", "Suas preferências foram atualizadas com sucesso.", "success");
   };
 

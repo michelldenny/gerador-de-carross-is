@@ -80,7 +80,7 @@ export default function ContentQuoteTemplate({
               onSelectElement?.("body");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.body}
               minSize={16}
               maxSize={26}

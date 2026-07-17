@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useProjectsStore, useEditorStore, useBrandsStore } from "@/stores";
-import { Slide } from "@/types";
+import { Slide, Brand } from "@/types";
 import { SlideThumbnail } from "./slide-thumbnail";
 import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import {
@@ -41,8 +41,8 @@ function SortableSlideItem({
   onDelete,
 }: {
   slide: Slide;
-  brand: any;
-  format: any;
+  brand?: Brand;
+  format: "vertical" | "square" | "story";
   idx: number;
   totalSlides: number;
   isActive: boolean;
@@ -135,11 +135,6 @@ export function SlidesSidebar({ projectId }: SlidesSidebarProps) {
   const { activeSlideId, setActiveSlideId, pushHistory } = useEditorStore();
   const { brands } = useBrandsStore();
 
-  const project = projects.find((p) => p.id === projectId);
-  if (!project) return null;
-
-  const brand = brands.find((b) => b.id === project.brandId) || brands[0];
-
   // Drag Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -151,6 +146,11 @@ export function SlidesSidebar({ projectId }: SlidesSidebarProps) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const project = projects.find((p) => p.id === projectId);
+  if (!project) return null;
+
+  const brand = brands.find((b) => b.id === project.brandId) || brands[0];
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

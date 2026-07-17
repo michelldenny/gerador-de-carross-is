@@ -81,7 +81,7 @@ export default function ComparisonTemplate({
               onSelectElement?.("title");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.title}
               minSize={16}
               maxSize={28}
@@ -105,7 +105,7 @@ export default function ComparisonTemplate({
               Evite
             </span>
             <div className="flex-1 h-full">
-              <AutoFitText
+              <AutoFitText showOverflowIndicator={isEditor}
                 text={leftItem}
                 minSize={11}
                 maxSize={15}
@@ -128,7 +128,7 @@ export default function ComparisonTemplate({
               Faça
             </span>
             <div className="flex-1 h-full">
-              <AutoFitText
+              <AutoFitText showOverflowIndicator={isEditor}
                 text={rightItem}
                 minSize={11}
                 maxSize={15}

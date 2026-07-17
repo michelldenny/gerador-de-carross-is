@@ -109,7 +109,7 @@ export default function ProjectsPage() {
             <SlidersHorizontal size={14} className="text-slate-400" />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as "updated" | "title" | "slides")}
               className="bg-transparent border-none outline-none font-bold text-slate-600 cursor-pointer"
             >
               <option value="updated">Última atualização</option>

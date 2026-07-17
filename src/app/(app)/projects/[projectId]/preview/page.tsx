@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useProjectsStore, useBrandsStore, useUiStore } from "@/stores";
 import { SlideCanvas } from "@/components/slides/slide-canvas";
 import { SlideRenderer } from "@/components/slides/slide-renderer";
+import { CAROUSEL_FORMATS } from "@/constants/formats";
 import { ArrowLeft, ChevronLeft, ChevronRight, Edit3, Download, Share2 } from "lucide-react";
 
 export default function ProjectPreviewPage() {
@@ -86,8 +87,8 @@ export default function ProjectPreviewPage() {
 
           <div className="scale-[0.8] sm:scale-[0.9] md:scale-100 transition-transform origin-center">
             <SlideCanvas
-              width={1080}
-              height={project.format === "story" ? 1920 : project.format === "square" ? 1080 : 1350}
+              width={CAROUSEL_FORMATS[project.format].width}
+              height={CAROUSEL_FORMATS[project.format].height}
               scale={0.4}
               mode="preview"
             >

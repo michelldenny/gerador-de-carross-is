@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useProjectsStore, useEditorStore, useUiStore } from "@/stores";
 import { searchImages } from "@/services/mock-image-service";
 import { Image as ImageIcon, Search, UploadCloud, Trash2, Sliders, RefreshCw } from "lucide-react";
+import { SlideImage } from "@/types";
+
+type EditableImageProperty = keyof Omit<SlideImage, "id" | "source" | "sourceUrl" | "photographerUrl">;
+
+interface SearchImageResult {
+  url: string;
+  photographer: string;
+}
 
 interface ImagePropertiesProps {
   projectId: string;
@@ -14,8 +22,11 @@ export function ImageProperties({ projectId }: ImagePropertiesProps) {
   const { activeSlideId, pushHistory } = useEditorStore();
   const { addNotification } = useUiStore();
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchImageResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchPanel, setShowSearchPanel] = useState(false);
 
@@ -25,7 +36,7 @@ export function ImageProperties({ projectId }: ImagePropertiesProps) {
   const activeSlide = project.slides.find((s) => s.id === activeSlideId) || project.slides[0];
   if (!activeSlide) return null;
 
-  const handleImageChange = (key: string, value: any) => {
+  const handleImageChange = (key: EditableImageProperty, value: string | number) => {
     pushHistory(JSON.stringify(project));
     const currentImg = activeSlide.image || {
       url: "https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=800",
@@ -49,6 +60,12 @@ export function ImageProperties({ projectId }: ImagePropertiesProps) {
 
   const removeImage = () => {
     pushHistory(JSON.stringify(project));
+    
+    // Revogar se for blob local
+    if (activeSlide.image?.url.startsWith("blob:")) {
+      URL.revokeObjectURL(activeSlide.image.url);
+    }
+    
     updateSlide(projectId, activeSlide.id, { image: undefined });
     addNotification("Imagem removida", "A foto foi retirada deste slide.", "info");
   };
@@ -66,15 +83,47 @@ export function ImageProperties({ projectId }: ImagePropertiesProps) {
     addNotification("Imagem atualizada", "Nova foto aplicada com sucesso.", "success");
   };
 
-  const simulateLocalUpload = () => {
-    // Simular upload de arquivo local
-    const mockUrls = [
-      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&q=80&w=800",
-    ];
-    const randomUrl = mockUrls[Math.floor(Math.random() * mockUrls.length)];
-    handleImageChange("url", randomUrl);
-    addNotification("Upload de imagem", "Imagem importada com sucesso.", "success");
+  const processFile = (file: File) => {
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      addNotification("Arquivo muito grande", "A imagem deve ter no máximo 5MB.", "warning");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      addNotification("Formato inválido", "Apenas imagens JPG, PNG ou WebP são permitidas.", "warning");
+      return;
+    }
+
+    if (activeSlide.image?.url.startsWith("blob:")) {
+      URL.revokeObjectURL(activeSlide.image.url);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    handleImageChange("url", objectUrl);
+    addNotification("Upload realizado", "Sua foto local foi importada.", "success");
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDraggingOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
   };
 
   const img = activeSlide.image;
@@ -95,12 +144,28 @@ export function ImageProperties({ projectId }: ImagePropertiesProps) {
 
       {!img ? (
         <div className="space-y-4">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/png, image/jpeg, image/webp"
+            className="hidden"
+          />
           <div
-            onClick={simulateLocalUpload}
-            className="border-2 border-dashed border-slate-200 hover:border-violet-500/30 p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:bg-slate-50/50 transition-all"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3 cursor-pointer transition-all ${
+              isDraggingOver
+                ? "border-violet-500 bg-violet-50/40"
+                : "border-slate-200 hover:border-violet-500/30 hover:bg-slate-50/50"
+            }`}
           >
-            <UploadCloud size={28} className="text-slate-400" />
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Enviar foto local</span>
+            <UploadCloud size={28} className={isDraggingOver ? "text-violet-500" : "text-slate-400"} />
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              {isDraggingOver ? "Solte para importar!" : "Arraste ou clique para enviar"}
+            </span>
           </div>
 
           <button

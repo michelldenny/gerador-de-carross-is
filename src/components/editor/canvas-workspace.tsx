@@ -5,6 +5,7 @@ import { useProjectsStore, useEditorStore, useBrandsStore } from "@/stores";
 import { SlideCanvas } from "../slides/slide-canvas";
 import { SlideRenderer } from "../slides/slide-renderer";
 import { SelectedElementId } from "@/types";
+import { CAROUSEL_FORMATS } from "@/constants/formats";
 
 interface CanvasWorkspaceProps {
   projectId: string;
@@ -45,8 +46,8 @@ export function CanvasWorkspace({ projectId }: CanvasWorkspaceProps) {
     <main className="flex-1 bg-slate-100 flex items-center justify-center p-8 overflow-auto custom-scrollbar relative">
       <div className="transition-all duration-300 ease-out transform">
         <SlideCanvas
-          width={1080}
-          height={project.format === "story" ? 1920 : project.format === "square" ? 1080 : 1350}
+          width={CAROUSEL_FORMATS[project.format].width}
+          height={CAROUSEL_FORMATS[project.format].height}
           scale={scale}
           mode="editor"
           showSafeArea={true}

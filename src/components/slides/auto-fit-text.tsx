@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 interface AutoFitTextProps {
   text: string;
@@ -8,6 +8,7 @@ interface AutoFitTextProps {
   maxSize?: number; // em px
   className?: string;
   style?: React.CSSProperties;
+  showOverflowIndicator?: boolean;
 }
 
 export function AutoFitText({
@@ -16,13 +17,14 @@ export function AutoFitText({
   maxSize = 48,
   className = "",
   style = {},
+  showOverflowIndicator = false,
 }: AutoFitTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(maxSize);
   const [isOverflow, setIsOverflow] = useState<boolean>(false);
 
-  useEffect(() => {
+  const calculateSize = useCallback(() => {
     const container = containerRef.current;
     const textEl = textRef.current;
     if (!container || !textEl) return;
@@ -61,6 +63,33 @@ export function AutoFitText({
     textEl.style.fontSize = `${optimal}px`;
   }, [text, minSize, maxSize]);
 
+  // 1. Efeito principal e detecção por ResizeObserver
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    calculateSize();
+
+    // Observar redimensionamentos reais do container
+    const observer = new ResizeObserver(() => {
+      calculateSize();
+    });
+    observer.observe(container);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [calculateSize]);
+
+  // 2. Observar carregamento de fontes
+  useEffect(() => {
+    if (typeof window !== "undefined" && "fonts" in document) {
+      document.fonts.ready.then(() => {
+        calculateSize();
+      });
+    }
+  }, [calculateSize]);
+
   return (
     <div
       ref={containerRef}
@@ -74,8 +103,8 @@ export function AutoFitText({
       >
         {text}
       </div>
-      {isOverflow && (
-        <div className="absolute top-1 right-1 bg-red-500 text-white text-[9px] px-1 rounded font-bold uppercase tracking-wider animate-pulse z-10">
+      {isOverflow && showOverflowIndicator && (
+        <div className="absolute top-1 right-1 bg-red-500 text-white text-[9px] px-1 rounded font-bold uppercase tracking-wider animate-pulse z-10 select-none pointer-events-none">
           Estouro
         </div>
       )}

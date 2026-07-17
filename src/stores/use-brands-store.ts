@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Brand } from "@/types";
 import { MOCK_BRANDS } from "@/mocks";
+import { safeStorage } from "./storage";
 
 interface BrandsState {
   brands: Brand[];
@@ -29,9 +30,7 @@ export const useBrandsStore = create<BrandsState>()(
     }),
     {
       name: "carousel_pro_brands",
-      storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? window.localStorage : (null as any)
-      ),
+      storage: createJSONStorage(() => safeStorage),
     }
   )
 );

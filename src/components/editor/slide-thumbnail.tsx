@@ -4,17 +4,18 @@ import React from "react";
 import { Slide, Brand } from "@/types";
 import { SlideCanvas } from "../slides/slide-canvas";
 import { SlideRenderer } from "../slides/slide-renderer";
+import { CAROUSEL_FORMATS } from "@/constants/formats";
 
 interface SlideThumbnailProps {
   slide: Slide;
   brand?: Brand;
-  format: "vertical" | "square" | "story";
+  format: keyof typeof CAROUSEL_FORMATS;
 }
 
 export function SlideThumbnail({ slide, brand, format }: SlideThumbnailProps) {
-  // Configuração real de largura e altura
-  const width = 1080;
-  const height = format === "story" ? 1920 : format === "square" ? 1080 : 1350;
+  const formatConfig = CAROUSEL_FORMATS[format];
+  const width = formatConfig.width;
+  const height = formatConfig.height;
 
   // Escala para ajustar na barra lateral (largura de ~140px)
   const thumbnailScale = 140 / width;

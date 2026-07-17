@@ -75,7 +75,7 @@ export default function CoverMinimalTemplate({
               onSelectElement?.("title");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.title}
               minSize={26}
               maxSize={56}
@@ -99,7 +99,7 @@ export default function CoverMinimalTemplate({
               onSelectElement?.("body");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.body}
               minSize={14}
               maxSize={20}

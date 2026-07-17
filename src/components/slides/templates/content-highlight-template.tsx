@@ -103,7 +103,7 @@ export default function ContentHighlightTemplate({
               onSelectElement?.("title");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.title}
               minSize={22}
               maxSize={44}

@@ -60,7 +60,7 @@ export default function CtaBrandTemplate({
               onSelectElement?.("title");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.title}
               minSize={22}
               maxSize={42}
@@ -77,7 +77,7 @@ export default function CtaBrandTemplate({
               onSelectElement?.("body");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.body}
               minSize={13}
               maxSize={18}

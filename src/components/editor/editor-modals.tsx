@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useUiStore, useProjectsStore, useBrandsStore } from "@/stores";
 import { SlideCanvas } from "../slides/slide-canvas";
 import { SlideRenderer } from "../slides/slide-renderer";
+import { CAROUSEL_FORMATS } from "@/constants/formats";
 import { shareProject } from "@/services/mock-share-service";
 import { exportProjectSlides } from "@/services/mock-export-service";
 import {
@@ -130,8 +131,8 @@ export function EditorModals({ projectId }: EditorModalsProps) {
 
               <div className="scale-[0.8] origin-center">
                 <SlideCanvas
-                  width={1080}
-                  height={project.format === "story" ? 1920 : project.format === "square" ? 1080 : 1350}
+                  width={CAROUSEL_FORMATS[project.format].width}
+                  height={CAROUSEL_FORMATS[project.format].height}
                   scale={0.4}
                   mode="preview"
                 >
@@ -311,7 +312,7 @@ export function EditorModals({ projectId }: EditorModalsProps) {
                     <span className="font-black uppercase tracking-wider">Recursos Pro Ativos</span>
                   </div>
                   <p>• Resolução Premium duplicada (2160px de largura).</p>
-                  <p>• Sem marca d'água no rodapé dos slides.</p>
+                  <p>{"• Sem marca d'água no rodapé dos slides."}</p>
                 </div>
 
                 <button

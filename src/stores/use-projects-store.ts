@@ -2,9 +2,12 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Project, Slide } from "@/types";
 import { MOCK_PROJECTS } from "@/mocks";
+import { safeStorage } from "./storage";
 
 interface ProjectsState {
   projects: Project[];
+  hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   addProject: (project: Project) => void;
   updateProject: (projectId: string, updates: Partial<Project>) => void;
   deleteProject: (projectId: string) => void;
@@ -20,6 +23,8 @@ export const useProjectsStore = create<ProjectsState>()(
   persist(
     (set) => ({
       projects: MOCK_PROJECTS,
+      hasHydrated: false,
+      setHasHydrated: (state) => set({ hasHydrated: state }),
       addProject: (project) =>
         set((state) => ({ projects: [project, ...state.projects] })),
       updateProject: (projectId, updates) =>
@@ -117,9 +122,10 @@ export const useProjectsStore = create<ProjectsState>()(
     }),
     {
       name: "carousel_pro_projects",
-      storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? window.localStorage : (null as any)
-      ),
+      storage: createJSONStorage(() => safeStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

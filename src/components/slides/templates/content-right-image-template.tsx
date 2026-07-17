@@ -75,7 +75,7 @@ export default function ContentRightImageTemplate({
                 onSelectElement?.("title");
               }}
             >
-              <AutoFitText
+              <AutoFitText showOverflowIndicator={isEditor}
                 text={slide.title}
                 minSize={18}
                 maxSize={30}
@@ -92,7 +92,7 @@ export default function ContentRightImageTemplate({
                 onSelectElement?.("body");
               }}
             >
-              <AutoFitText
+              <AutoFitText showOverflowIndicator={isEditor}
                 text={slide.body}
                 minSize={12}
                 maxSize={16}

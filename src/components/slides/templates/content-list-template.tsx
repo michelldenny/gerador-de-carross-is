@@ -79,7 +79,7 @@ export default function ContentListTemplate({
               onSelectElement?.("title");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.title}
               minSize={18}
               maxSize={32}

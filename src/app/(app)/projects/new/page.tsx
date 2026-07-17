@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useProjectsStore, useBrandsStore, useUiStore, useCreditsStore } from "@/stores";
 import { createProjectSchema } from "@/schemas";
+import { z } from "zod";
+
+type CreateProjectFormData = z.infer<typeof createProjectSchema>;
 import { generateCarouselWithAI } from "@/services/mock-ai-service";
 import { Project, Slide, SlideTemplateId } from "@/types";
 import {
@@ -114,7 +117,7 @@ export default function NewProjectPage() {
     setStep(step - 1);
   };
 
-  const executeGeneration = async (formData: any) => {
+  const executeGeneration = async (formData: CreateProjectFormData) => {
     setStep(5); // Ir para tela de Geração IA
     setGenerationState(0, "Iniciando inteligência artificial...", true);
 

@@ -92,7 +92,7 @@ export default function ContentNumberTemplate({
                 {numberText}.
               </span>
               <div className="flex-1 h-full">
-                <AutoFitText
+                <AutoFitText showOverflowIndicator={isEditor}
                   text={slide.title}
                   minSize={20}
                   maxSize={38}
@@ -112,7 +112,7 @@ export default function ContentNumberTemplate({
               onSelectElement?.("body");
             }}
           >
-            <AutoFitText
+            <AutoFitText showOverflowIndicator={isEditor}
               text={slide.body}
               minSize={13}
               maxSize={18}

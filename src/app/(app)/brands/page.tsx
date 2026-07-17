@@ -252,7 +252,7 @@ export default function BrandsPage() {
             {/* Card Footer CTA banner */}
             <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
               <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider">CTA Padrão</p>
-              <p className="text-[10px] text-slate-700 font-bold mt-1 italic">"{b.defaultCta}"</p>
+              <p className="text-[10px] text-slate-700 font-bold mt-1 italic">{`"${b.defaultCta}"`}</p>
             </div>
           </div>
         ))}

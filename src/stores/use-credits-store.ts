@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { safeStorage } from "./storage";
 
 interface CreditsState {
   credits: number;
@@ -23,9 +24,7 @@ export const useCreditsStore = create<CreditsState>()(
     }),
     {
       name: "carousel_pro_credits",
-      storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? window.localStorage : (null as any)
-      ),
+      storage: createJSONStorage(() => safeStorage),
     }
   )
 );

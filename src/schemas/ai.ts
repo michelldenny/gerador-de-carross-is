@@ -1,5 +1,36 @@
 import { z } from "zod";
 
+export const generateCarouselInputSchema = z
+  .object({
+    editorialMode: z.enum(["quick", "custom", "editorial"]),
+    title: z.string().trim().min(3).max(120),
+    theme: z.string().trim().min(3).max(500),
+    brandId: z.string().trim().min(1).max(100),
+    audience: z.string().trim().min(3).max(300),
+    goal: z.string().trim().min(1).max(100),
+    tone: z.string().trim().min(1).max(100),
+    slideCount: z.number().int().min(3).max(10),
+    cta: z.string().trim().min(3).max(300),
+    format: z.enum(["vertical", "square", "story"]),
+    imageOption: z.string().trim().min(1).max(100),
+  })
+  .superRefine((input, context) => {
+    if (input.editorialMode === "editorial" && input.slideCount !== 9) {
+      context.addIssue({
+        code: "custom",
+        path: ["slideCount"],
+        message: "O modo editorial exige exatamente 9 slides",
+      });
+    }
+    if (input.editorialMode === "editorial" && input.format !== "vertical") {
+      context.addIssue({
+        code: "custom",
+        path: ["format"],
+        message: "O modo editorial exige o formato vertical",
+      });
+    }
+  });
+
 export const aiCarouselResponseSchema = z.object({
   projectTitle: z.string(),
   strategy: z.object({

@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useProjectsStore, useBrandsStore, useUiStore, useCreditsStore } from "@/stores";
 import { createProjectSchema } from "@/schemas";
 import { z } from "zod";
-import { generateCarouselWithAI } from "@/services/mock-ai-service";
+import { generateCarouselWithAI } from "@/services/ai-service";
 import { Project, Slide, SlideTemplateId } from "@/types";
 import { SlideCanvas } from "@/components/slides/slide-canvas";
 import { SlideRenderer } from "@/components/slides/slide-renderer";
@@ -139,6 +139,7 @@ function NewProjectForm() {
     watch,
     reset,
   } = useForm<{
+    editorialMode: "quick" | "custom" | "editorial";
     title: string;
     theme: string;
     audience: string;
@@ -168,6 +169,7 @@ function NewProjectForm() {
   }>({
     resolver: zodResolver(createProjectSchema),
     defaultValues: {
+      editorialMode: "custom",
       title: "",
       theme: "",
       audience: "Empreendedores e profissionais de marketing",
@@ -205,6 +207,7 @@ function NewProjectForm() {
 
     if (goalParam || toneParam || themeParam) {
       reset({
+        editorialMode: "custom",
         title: themeParam ? `Carrossel: ${themeParam}` : "",
         theme: themeParam || "",
         audience: "Público geral do Instagram",
@@ -236,6 +239,7 @@ function NewProjectForm() {
   }, [searchParams, reset, brands]);
 
   const selectedFormat = watch("format");
+  const selectedEditorialMode = watch("editorialMode");
   const selectedBrandId = watch("brandId");
   const selectedSlideCount = watch("slideCount");
   const selectedImageOption = watch("imageOption");
@@ -343,6 +347,7 @@ function NewProjectForm() {
       ];
 
       const aiResponsePromise = generateCarouselWithAI({
+        editorialMode: formData.editorialMode,
         title: formData.title,
         theme: formData.theme,
         brandId: formData.brandId,
@@ -453,6 +458,7 @@ function NewProjectForm() {
         hashtags: aiResponse.caption.hashtags,
         updatedAt: "Agora mesmo",
         format: formData.format,
+        creationMode: formData.editorialMode,
       };
 
       addProject(newProject);
@@ -540,6 +546,42 @@ function NewProjectForm() {
             <FileText size={16} className="text-violet-600" /> Detalhes Estratégicos
           </h3>
 
+          <input type="hidden" {...register("editorialMode")} />
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              Método de criação
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {[
+                { id: "quick", title: "Carrossel rápido", description: "Cinco slides e validações essenciais." },
+                { id: "custom", title: "Personalizado", description: "Respeita suas escolhas de formato e quantidade." },
+                { id: "editorial", title: "Editorial aprofundado", description: "Método BrandsDecoded: nove slides verticais." },
+              ].map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => {
+                    const id = mode.id as "quick" | "custom" | "editorial";
+                    setValue("editorialMode", id, { shouldValidate: true });
+                    if (id === "quick") setValue("slideCount", 5);
+                    if (id === "editorial") {
+                      setValue("slideCount", 9);
+                      setValue("format", "vertical");
+                    }
+                  }}
+                  className={`rounded-2xl border p-3 text-left transition-colors ${
+                    selectedEditorialMode === mode.id
+                      ? "border-violet-500 bg-violet-50"
+                      : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                  }`}
+                >
+                  <span className="block text-xs font-bold text-slate-800">{mode.title}</span>
+                  <span className="mt-1 block text-[10px] leading-relaxed text-slate-500">{mode.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nome do Projeto *</label>
@@ -622,6 +664,7 @@ function NewProjectForm() {
                 type="range"
                 min="3"
                 max="10"
+                disabled={selectedEditorialMode !== "custom"}
                 {...register("slideCount", { valueAsNumber: true })}
                 className="w-full accent-violet-600 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer mt-2"
               />

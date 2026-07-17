@@ -1,6 +1,9 @@
 import { SlideTemplateId, SlideType } from "./slide";
 
+export type EditorialMode = "quick" | "custom" | "editorial";
+
 export interface GenerateCarouselInput {
+  editorialMode: EditorialMode;
   title: string;
   theme: string;
   brandId: string;
@@ -11,6 +14,14 @@ export interface GenerateCarouselInput {
   cta: string;
   format: "vertical" | "square" | "story";
   imageOption: string;
+}
+
+export interface GenerationTrace {
+  schemaVersion: string;
+  rulesetVersion: string;
+  validatorVersion: string;
+  provider: string;
+  retrievedChunkIds: string[];
 }
 
 export interface AICarouselResponse {

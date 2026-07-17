@@ -10,5 +10,11 @@
     "files": [
       "static/chunks/646.f342b7cffc01feb0.js"
     ]
+  },
+  "services\\mock-export-service.ts -> html2canvas": {
+    "id": 4264,
+    "files": [
+      "static/chunks/ad2866b8.3a53275943d3b1db.js"
+    ]
   }
 }

@@ -1,4 +1,5 @@
 import { Slide } from "./slide";
+import type { EditorialMode } from "./ai";
 
 export type CarouselFormat = "vertical" | "square" | "story";
 
@@ -15,4 +16,5 @@ export interface Project {
   hashtags: string[];
   updatedAt: string;
   format: CarouselFormat;
+  creationMode?: EditorialMode;
 }

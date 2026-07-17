@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const createProjectSchema = z.object({
+  editorialMode: z.enum(["quick", "custom", "editorial"]),
   title: z.string().min(3, "O nome do projeto deve ter pelo menos 3 caracteres"),
   theme: z.string().min(3, "O tema é obrigatório e deve ser descritivo"),
   audience: z.string().min(3, "Defina o público-alvo para orientar a IA"),
@@ -29,4 +30,19 @@ export const createProjectSchema = z.object({
   imageCount: z.number().optional(),
   favoriteImages: z.array(z.string()).optional(),
   decideLater: z.boolean().optional(),
+}).superRefine((project, context) => {
+  if (project.editorialMode === "editorial" && project.slideCount !== 9) {
+    context.addIssue({
+      code: "custom",
+      path: ["slideCount"],
+      message: "O modo editorial exige exatamente 9 slides",
+    });
+  }
+  if (project.editorialMode === "editorial" && project.format !== "vertical") {
+    context.addIssue({
+      code: "custom",
+      path: ["format"],
+      message: "O modo editorial exige o formato vertical",
+    });
+  }
 });

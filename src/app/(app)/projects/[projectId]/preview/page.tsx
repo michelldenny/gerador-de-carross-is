@@ -14,11 +14,22 @@ export default function ProjectPreviewPage() {
   const router = useRouter();
   const projectId = params?.projectId as string;
 
-  const { projects } = useProjectsStore();
-  const { brands } = useBrandsStore();
+  const { projects, hasHydrated: projectsHydrated } = useProjectsStore();
+  const { brands, hasHydrated: brandsHydrated } = useBrandsStore();
   const { setExportModal } = useUiStore();
 
   const [activeIdx, setActiveIdx] = useState(0);
+
+  if (!projectsHydrated || !brandsHydrated) {
+    return (
+      <div
+        role="status"
+        className="p-12 text-center text-slate-500 font-bold text-xs uppercase font-sans"
+      >
+        Carregando preview...
+      </div>
+    );
+  }
 
   const project = projects.find((p) => p.id === projectId);
   if (!project) {

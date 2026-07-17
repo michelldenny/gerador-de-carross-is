@@ -4,6 +4,7 @@ import { createProjectSchema, brandSchema } from "../schemas";
 describe("Testes de Validação de Schemas Zod", () => {
   it("deve validar dados válidos de criação de carrossel", () => {
     const validData = {
+      editorialMode: "custom",
       title: "Meu Primeiro Carrossel",
       theme: "Dicas de Saúde Bucal",
       audience: "Dentistas e profissionais de saúde",
@@ -31,6 +32,25 @@ describe("Testes de Validação de Schemas Zod", () => {
 
     const res = createProjectSchema.safeParse(invalidData);
     expect(res.success).toBe(false);
+  });
+
+  it("deve exigir nove slides verticais no modo editorial", () => {
+    const base = {
+      editorialMode: "editorial",
+      title: "Projeto editorial",
+      theme: "Cultura e comportamento",
+      audience: "Profissionais criativos",
+      goal: "educar",
+      tone: "editorial",
+      slideCount: 7,
+      imageOption: "few",
+      imageSource: "unsplash",
+      cta: "Leia a análise completa",
+      format: "square",
+      brandId: "brand-1",
+    };
+
+    expect(createProjectSchema.safeParse(base).success).toBe(false);
   });
 
   it("deve validar dados válidos de marca", () => {

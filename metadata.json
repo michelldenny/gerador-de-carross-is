@@ -1,0 +1,6 @@
+{
+  "name": "CarouselPro",
+  "description": "SaaS platform for creating professional Instagram carousels using AI-assisted content drafting, styling and interactive editing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

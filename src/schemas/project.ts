@@ -13,4 +13,20 @@ export const createProjectSchema = z.object({
   format: z.enum(["vertical", "square", "story"]),
   brandId: z.string().min(1, "Selecione uma marca"),
   notes: z.string().optional(),
+  
+  // Novos campos para flexibilidade e riqueza de IA
+  niche: z.string().optional(),
+  visualStyle: z.string().optional(),
+  customColors: z.boolean().optional(),
+  primaryColor: z.string().optional(),
+  secondaryColor: z.string().optional(),
+  accentColor: z.string().optional(),
+  backgroundColor: z.string().optional(),
+  fontFamily: z.string().optional(),
+  logoUrl: z.string().optional(),
+  saveAsBrand: z.boolean().optional(),
+  newBrandName: z.string().optional(),
+  imageCount: z.number().optional(),
+  favoriteImages: z.array(z.string()).optional(),
+  decideLater: z.boolean().optional(),
 });

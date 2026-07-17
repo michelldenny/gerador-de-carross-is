@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useProjectsStore, useBrandsStore, useUiStore, useCreditsStore } from "@/stores";
+import { SlideCanvas } from "@/components/slides/slide-canvas";
+import { SlideRenderer } from "@/components/slides/slide-renderer";
 import {
   Plus,
   FolderHeart,
@@ -38,13 +40,13 @@ export default function DashboardPage() {
   const totalSlides = projects.reduce((acc, p) => acc + p.slides.length, 0);
   const totalExports = projects.filter((p) => p.status === "published").length * 3 + 12;
 
-  const handleCreateCardClick = (type: string) => {
+  const handleCreateCardClick = (goal: string, tone: string, theme: string) => {
     addNotification(
       "Configuração Rápida",
-      `Iniciando setup rápido de carrossel do tipo '${type}'.`,
+      `Iniciando setup rápido de carrossel com objetivo de '${goal}'.`,
       "info"
     );
-    router.push("/projects/new");
+    router.push(`/projects/new?goal=${goal}&tone=${tone}&theme=${encodeURIComponent(theme)}`);
   };
 
   const getBrandName = (brandId: string) => {
@@ -123,7 +125,7 @@ export default function DashboardPage() {
         <h3 className="text-sm font-bold text-slate-800 tracking-tight">O que deseja criar hoje?</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div
-            onClick={() => handleCreateCardClick("Educativo")}
+            onClick={() => handleCreateCardClick("educar", "profissional", "5 Regras de Ouro de UI/UX")}
             className="group bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-violet-500/30 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-4"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center transition-all">
@@ -136,7 +138,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            onClick={() => handleCreateCardClick("Oferta Comercial")}
+            onClick={() => handleCreateCardClick("vender", "persuasivo", "Oferta Exclusiva Imperdível")}
             className="group bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-violet-500/30 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-4"
           >
             <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center transition-all">
@@ -149,7 +151,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            onClick={() => handleCreateCardClick("Autoridade")}
+            onClick={() => handleCreateCardClick("autoridade", "inspirador", "Como Venci o Medo de Falhar")}
             className="group bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-violet-500/30 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-4"
           >
             <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 group-hover:bg-sky-500 group-hover:text-white flex items-center justify-center transition-all">
@@ -183,18 +185,27 @@ export default function DashboardPage() {
             >
               <div className="h-44 bg-slate-100 flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
-                <div className="scale-[0.25] origin-center rotate-3 opacity-90 transition-all duration-300 group-hover:scale-[0.27]">
-                  {/* Visualização estática do primeiro slide */}
-                  <div className="w-[1080px] h-[1350px] bg-slate-900 text-white rounded-[40px] shadow-2xl p-16 flex flex-col justify-between">
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold uppercase tracking-widest text-violet-400">
-                        {getBrandName(p.brandId)}
-                      </span>
+                <div className="scale-[0.24] origin-center rotate-2 opacity-95 transition-all duration-300 group-hover:scale-[0.26] group-hover:rotate-0 flex items-center justify-center shrink-0">
+                  {p.slides && p.slides.length > 0 ? (
+                    <SlideCanvas
+                      width={1080}
+                      height={p.format === "story" ? 1920 : p.format === "square" ? 1080 : 1350}
+                      scale={1.0}
+                      mode="thumbnail"
+                    >
+                      <SlideRenderer
+                        slide={p.slides[0]}
+                        brand={brands.find((b) => b.id === p.brandId) || brands[0]}
+                        mode="thumbnail"
+                      />
+                    </SlideCanvas>
+                  ) : (
+                    <div className="w-[1080px] h-[1350px] bg-slate-900 text-white rounded-[40px] shadow-2xl p-16 flex flex-col justify-between">
+                      <div className="text-5xl font-black leading-tight">{p.title}</div>
                     </div>
-                    <div className="text-5xl font-black leading-tight max-w-[85%]">{p.title}</div>
-                    <div className="text-3xl font-bold opacity-60">Arrasta para o lado ➔</div>
-                  </div>
+                  )}
                 </div>
+
                 {/* Badge do Status */}
                 <span
                   className={`absolute top-4 left-4 z-20 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${

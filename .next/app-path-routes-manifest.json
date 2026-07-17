@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/render/projects/[projectId]/slides/[slideId]/page": "/render/projects/[projectId]/slides/[slideId]",
+  "/page": "/",
+  "/(app)/files/page": "/files",
+  "/(app)/projects/[projectId]/editor/page": "/projects/[projectId]/editor",
+  "/(app)/dashboard/page": "/dashboard",
+  "/(app)/brands/page": "/brands",
+  "/(app)/projects/new/page": "/projects/new",
+  "/(app)/help/page": "/help",
+  "/(app)/projects/[projectId]/preview/page": "/projects/[projectId]/preview",
+  "/(app)/projects/page": "/projects",
+  "/(app)/templates/page": "/templates",
+  "/(app)/settings/page": "/settings"
+}

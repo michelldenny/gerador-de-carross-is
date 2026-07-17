@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useProjectsStore, useEditorStore, useUiStore } from "@/stores";
-import { Sparkles, RefreshCw, ChevronRight, AlertTriangle } from "lucide-react";
+import { Sparkles, RefreshCw, ChevronRight } from "lucide-react";
 
 interface ContentPropertiesProps {
   projectId: string;

@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   Coins,
   Sparkles,
-  Upload,
   Image as ImageIcon,
   Palette,
   FileText,
@@ -25,8 +24,6 @@ import {
   Square,
   RectangleVertical,
   CheckCircle2,
-  AlertCircle,
-  Loader2,
 } from "lucide-react";
 import { MOCK_UNSPLASH_IMAGES } from "@/mocks";
 
@@ -34,7 +31,7 @@ export default function NewProjectPage() {
   const router = useRouter();
   const { addProject } = useProjectsStore();
   const { brands } = useBrandsStore();
-  const { addNotification, generationProgress, generationStep, isGenerating, setGenerationState } = useUiStore();
+  const { addNotification, generationProgress, generationStep, setGenerationState } = useUiStore();
   const { consumeCredits } = useCreditsStore();
 
   const [step, setStep] = useState(1);
@@ -44,7 +41,6 @@ export default function NewProjectPage() {
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
   } = useForm<{
     title: string;
     theme: string;
@@ -273,7 +269,7 @@ export default function NewProjectPage() {
                       : "bg-slate-100 text-slate-400"
                   }`}
                 >
-                  {isCompleted ? <Check size={14} /> : s.stepNum}
+                  {isCompleted ? <Check size={14} /> : <Icon size={14} />}
                 </div>
                 <span className={`text-xs font-bold hidden sm:inline ${isActive ? "text-slate-800" : "text-slate-400"}`}>
                   {s.label}

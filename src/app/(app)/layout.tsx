@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useUiStore, useCreditsStore } from "@/stores";
 import {
   LayoutDashboard,
@@ -22,7 +22,6 @@ import {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [mounted, setMounted] = useState(false);

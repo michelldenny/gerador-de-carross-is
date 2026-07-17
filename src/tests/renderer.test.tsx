@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SlideRenderer } from "../components/slides/slide-renderer";
-import { Slide, Brand } from "@/types";
+import { Slide, Brand, SlideTemplateId } from "@/types";
 
 // Mock do ResizeObserver para o ambiente jsdom
 beforeAll(() => {
@@ -13,7 +13,7 @@ beforeAll(() => {
   }));
 });
 
-describe("Componente SlideRenderer", () => {
+describe("Componente SlideRenderer - Multi Templates", () => {
   const mockBrand: Brand = {
     id: "brand-1",
     name: "Dental Premium",
@@ -29,13 +29,54 @@ describe("Componente SlideRenderer", () => {
     projectCount: 0,
   };
 
+  const createTestSlide = (template: SlideTemplateId, title: string): Slide => ({
+    id: `slide-${template}`,
+    order: 1,
+    type: "content",
+    template,
+    title,
+    subtitle: "Subtítulo do Slide",
+    body: title,
+    highlight: title,
+    listItems: ["Item 1 do teste", "Item 2 do teste"],
+    cta: title,
+    styles: {
+      backgroundColor: "#ffffff",
+      textColor: "#000000",
+      accentColor: "#ff0000",
+      fontFamily: "Inter",
+    },
+  });
+
+  const templates: SlideTemplateId[] = [
+    "cover-image",
+    "cover-minimal",
+    "content-highlight",
+    "content-number",
+    "content-list",
+    "content-left-image",
+    "content-right-image",
+    "content-quote",
+    "comparison",
+    "cta-brand",
+  ];
+
+  templates.forEach((templateId) => {
+    it(`deve renderizar o template "${templateId}" sem quebrar`, () => {
+      const slide = createTestSlide(templateId, `Slide do template ${templateId}`);
+      render(<SlideRenderer slide={slide} brand={mockBrand} mode="preview" />);
+      
+      expect(screen.getAllByText(`Slide do template ${templateId}`).length).toBeGreaterThan(0);
+    });
+  });
+
   it("deve renderizar o template de layout UnsupportedTemplate se o templateId for inválido", () => {
     const invalidSlide: Slide = {
-      id: "slide-1",
+      id: "slide-invalid",
       order: 1,
       type: "content",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      template: "template-inexistente" as any, // força tipo incorreto
+      template: "template-inexistente" as any,
       title: "Título de Teste",
       body: "Corpo do slide de teste",
       styles: {

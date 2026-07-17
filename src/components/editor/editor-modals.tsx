@@ -83,7 +83,7 @@ export function EditorModals({ projectId }: EditorModalsProps) {
     setExportProgress(0);
     setExportStatusText("Iniciando renderização de slides...");
 
-    const res = await exportProjectSlides(
+    await exportProjectSlides(
       projectId,
       {
         format: exportFormat,

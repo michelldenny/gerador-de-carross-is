@@ -2,7 +2,7 @@
 
 import React from "react";
 import { MOCK_TEMPLATES } from "@/mocks";
-import { Layout, Sparkles, Image, Check, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 
 export default function TemplatesPage() {
   return (

@@ -10,10 +10,8 @@ import {
   Plus,
   Sparkles,
   Trash2,
-  Check,
   Instagram,
   Globe,
-  PlusCircle,
 } from "lucide-react";
 
 export default function BrandsPage() {

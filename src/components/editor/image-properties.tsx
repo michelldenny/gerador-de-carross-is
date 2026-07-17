@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useProjectsStore, useEditorStore, useUiStore } from "@/stores";
 import { searchImages } from "@/services/mock-image-service";
-import { Image as ImageIcon, Search, UploadCloud, Trash2, Sliders, RefreshCw } from "lucide-react";
+import { Search, UploadCloud, Trash2, Sliders, RefreshCw } from "lucide-react";
 import { SlideImage } from "@/types";
 
 type EditableImageProperty = keyof Omit<SlideImage, "id" | "source" | "sourceUrl" | "photographerUrl">;

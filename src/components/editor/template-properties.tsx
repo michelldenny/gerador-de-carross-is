@@ -4,7 +4,6 @@ import React from "react";
 import { useProjectsStore, useEditorStore, useUiStore } from "@/stores";
 import { MOCK_TEMPLATES } from "@/mocks";
 import { SlideTemplateId } from "@/types";
-import { Layers } from "lucide-react";
 
 interface TemplatePropertiesProps {
   projectId: string;

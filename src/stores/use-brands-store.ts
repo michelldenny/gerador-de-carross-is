@@ -6,6 +6,8 @@ import { safeStorage } from "./storage";
 
 interface BrandsState {
   brands: Brand[];
+  hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   addBrand: (brand: Brand) => void;
   updateBrand: (brandId: string, updates: Partial<Brand>) => void;
   deleteBrand: (brandId: string) => void;
@@ -15,6 +17,8 @@ export const useBrandsStore = create<BrandsState>()(
   persist(
     (set) => ({
       brands: MOCK_BRANDS,
+      hasHydrated: false,
+      setHasHydrated: (state) => set({ hasHydrated: state }),
       addBrand: (brand) =>
         set((state) => ({ brands: [brand, ...state.brands] })),
       updateBrand: (brandId, updates) =>
@@ -31,6 +35,9 @@ export const useBrandsStore = create<BrandsState>()(
     {
       name: "carousel_pro_brands",
       storage: createJSONStorage(() => safeStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

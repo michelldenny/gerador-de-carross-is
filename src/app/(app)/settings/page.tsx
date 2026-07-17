@@ -3,7 +3,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useUiStore } from "@/stores";
-import { User, Shield, CreditCard, Bell } from "lucide-react";
+import { User, Shield, CreditCard } from "lucide-react";
 
 export default function SettingsPage() {
   const { addNotification } = useUiStore();
@@ -23,7 +23,7 @@ export default function SettingsPage() {
     },
   });
 
-  const onSubmit = (data: SettingsFormData) => {
+  const onSubmit = (_data: SettingsFormData) => {
     addNotification("Configurações salvas", "Suas preferências foram atualizadas com sucesso.", "success");
   };
 

@@ -6,7 +6,7 @@ import { useProjectsStore, useBrandsStore, useUiStore } from "@/stores";
 import { SlideCanvas } from "@/components/slides/slide-canvas";
 import { SlideRenderer } from "@/components/slides/slide-renderer";
 import { CAROUSEL_FORMATS } from "@/constants/formats";
-import { ArrowLeft, ChevronLeft, ChevronRight, Edit3, Download, Share2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Edit3, Download } from "lucide-react";
 
 export default function ProjectPreviewPage() {
   const params = useParams();
@@ -15,7 +15,7 @@ export default function ProjectPreviewPage() {
 
   const { projects } = useProjectsStore();
   const { brands } = useBrandsStore();
-  const { setExportModal, setShareModal } = useUiStore();
+  const { setExportModal } = useUiStore();
 
   const [activeIdx, setActiveIdx] = useState(0);
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createProjectSchema, brandSchema, captionSchema } from "../schemas";
+import { createProjectSchema, brandSchema } from "../schemas";
 
 describe("Testes de Validação de Schemas Zod", () => {
   it("deve validar dados válidos de criação de carrossel", () => {

@@ -10,7 +10,7 @@ export interface ShareOptions {
 }
 
 export async function shareProject(
-  options: ShareOptions
+  _options: ShareOptions
 ): Promise<{ success: boolean; shareUrl: string }> {
   await delay(1000);
 

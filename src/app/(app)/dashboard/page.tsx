@@ -9,7 +9,6 @@ import {
   FolderHeart,
   Layers,
   Share2,
-  FolderOpen,
   MoreVertical,
   Edit3,
   Copy,

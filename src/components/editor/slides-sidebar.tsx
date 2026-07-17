@@ -131,7 +131,7 @@ function SortableSlideItem({
 }
 
 export function SlidesSidebar({ projectId }: SlidesSidebarProps) {
-  const { projects, reorderSlides, addSlide, deleteSlide, updateProject } = useProjectsStore();
+  const { projects, reorderSlides, addSlide, deleteSlide } = useProjectsStore();
   const { activeSlideId, setActiveSlideId, pushHistory } = useEditorStore();
   const { brands } = useBrandsStore();
 

@@ -22,6 +22,7 @@ export function PropertiesPanel({ projectId }: PropertiesPanelProps) {
     { id: "design", label: "Estilo", icon: Palette },
     { id: "image", label: "Imagem", icon: Image },
     { id: "template", label: "Layout", icon: Layers },
+    { id: "caption", label: "Legenda", icon: FileText },
   ] as const;
 
   return (
@@ -42,7 +43,7 @@ export function PropertiesPanel({ projectId }: PropertiesPanelProps) {
               }`}
             >
               <Icon size={14} />
-              <span>{tab.label}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           );
         })}
@@ -54,16 +55,14 @@ export function PropertiesPanel({ projectId }: PropertiesPanelProps) {
         {activeTab === "design" && <DesignProperties projectId={projectId} />}
         {activeTab === "image" && <ImageProperties projectId={projectId} />}
         {activeTab === "template" && <TemplateProperties projectId={projectId} />}
+        {activeTab === "caption" && <CaptionPanel projectId={projectId} />}
       </div>
 
       {/* Bottom extra action: Legenda editor shortcut */}
       <div className="p-4 border-t border-slate-100 bg-slate-50/50">
         <button
           onClick={() => {
-            // Se estiver em outra aba, chaveamos para design ou criamos um toggle
-            // mas podemos abrir um modal ou simplesmente disponibilizar a aba no switch
-            // Para manter simples, fornecemos uma gaveta de legenda
-            setActiveTab("content");
+            setActiveTab("caption");
           }}
           className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 rounded-xl text-[10px] flex items-center justify-center gap-1.5 transition-colors uppercase tracking-wider"
         >

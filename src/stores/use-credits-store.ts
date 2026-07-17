@@ -4,6 +4,8 @@ import { safeStorage } from "./storage";
 
 interface CreditsState {
   credits: number;
+  hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   consumeCredits: (amount: number) => boolean;
   addCredits: (amount: number) => void;
 }
@@ -12,6 +14,8 @@ export const useCreditsStore = create<CreditsState>()(
   persist(
     (set, get) => ({
       credits: 150,
+      hasHydrated: false,
+      setHasHydrated: (state) => set({ hasHydrated: state }),
       consumeCredits: (amount) => {
         const { credits } = get();
         if (credits >= amount) {
@@ -25,6 +29,9 @@ export const useCreditsStore = create<CreditsState>()(
     {
       name: "carousel_pro_credits",
       storage: createJSONStorage(() => safeStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

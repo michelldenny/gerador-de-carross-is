@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FolderSync, Image as ImageIcon, Plus, Trash2, UploadCloud } from "lucide-react";
+import { FolderSync, Trash2, UploadCloud } from "lucide-react";
 import { useUiStore } from "@/stores";
 
 export default function FilesPage() {

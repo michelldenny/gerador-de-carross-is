@@ -9,7 +9,7 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-export default [
+const config = [
   {
     ignores: [
       ".next/**",
@@ -25,9 +25,17 @@ export default [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_"
+        }
+      ],
       "@next/next/no-img-element": "off",
     }
   }
 ];
+
+export default config;

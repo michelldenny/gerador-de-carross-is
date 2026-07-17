@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { HelpCircle, FileText, Video, MessageSquare } from "lucide-react";
+import { FileText, Video, MessageSquare } from "lucide-react";
 
 export default function HelpPage() {
   const faqs = [

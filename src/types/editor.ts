@@ -1,4 +1,4 @@
-export type ActiveTab = "content" | "design" | "image" | "template";
+export type ActiveTab = "content" | "design" | "image" | "template" | "caption";
 
 export type SelectedElementId = 
   | "title" 

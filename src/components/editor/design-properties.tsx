@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useProjectsStore, useEditorStore, useUiStore, useBrandsStore } from "@/stores";
-import { Sliders, RefreshCw, Palette } from "lucide-react";
+import { RefreshCw, Palette } from "lucide-react";
 
 interface DesignPropertiesProps {
   projectId: string;

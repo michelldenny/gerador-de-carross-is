@@ -19,7 +19,7 @@ describe("Componente AutoFitText", () => {
   });
 
   it("deve exibir o indicador de Estouros apenas se configurado", () => {
-    const { rerender } = render(
+    render(
       <AutoFitText text="Estouro de Texto" showOverflowIndicator={false} />
     );
     expect(screen.queryByText("Estouro")).toBeNull();

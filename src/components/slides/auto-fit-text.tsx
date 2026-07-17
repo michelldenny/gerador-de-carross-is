@@ -61,6 +61,7 @@ export function AutoFitText({
 
     // Definir para o tamanho ótimo final
     textEl.style.fontSize = `${optimal}px`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, minSize, maxSize]);
 
   // 1. Efeito principal e detecção por ResizeObserver

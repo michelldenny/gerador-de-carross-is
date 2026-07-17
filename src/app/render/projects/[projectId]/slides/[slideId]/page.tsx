@@ -12,11 +12,13 @@ export default function RenderSlidePage() {
   const projectId = params?.projectId as string;
   const slideId = params?.slideId as string;
 
-  const { projects, hasHydrated } = useProjectsStore();
-  const { brands } = useBrandsStore();
+  const { projects, hasHydrated: projectsHydrated } = useProjectsStore();
+  const { brands, hasHydrated: brandsHydrated } = useBrandsStore();
 
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
+  // 1. Aguardar carregamento de fontes
   useEffect(() => {
     if (typeof window !== "undefined" && "fonts" in document) {
       document.fonts.ready.then(() => setFontsLoaded(true));
@@ -29,15 +31,51 @@ export default function RenderSlidePage() {
   const slide = project?.slides.find((s) => s.id === slideId);
   const brand = project ? brands.find((b) => b.id === project.brandId) || brands[0] : undefined;
 
-  const isReady = hasHydrated && !!project && !!slide && fontsLoaded;
+  const storesHydrated = projectsHydrated && brandsHydrated;
+
+  // 2. Aguardar carregamento de imagens no DOM
+  useEffect(() => {
+    if (!storesHydrated || !project || !slide) return;
+
+    // Timeout de segurança: libera a renderização após 3.5 segundos em caso de travamentos de rede
+    const safetyTimeout = setTimeout(() => {
+      setImagesLoaded(true);
+    }, 3500);
+
+    const checkImages = () => {
+      const imgs = Array.from(document.querySelectorAll("img"));
+      if (imgs.length === 0) {
+        setImagesLoaded(true);
+        clearTimeout(safetyTimeout);
+        return;
+      }
+
+      const promises = imgs.map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+        });
+      });
+
+      Promise.all(promises).then(() => {
+        setImagesLoaded(true);
+        clearTimeout(safetyTimeout);
+      });
+    };
+
+    const tick = setTimeout(checkImages, 150);
+
+    return () => {
+      clearTimeout(safetyTimeout);
+      clearTimeout(tick);
+    };
+  }, [storesHydrated, project, slide]);
+
+  const isReady = storesHydrated && !!project && !!slide && fontsLoaded && imagesLoaded;
 
   if (!isReady || !project || !slide) {
-    return (
-      <div 
-        style={{ width: 1080, height: 1350, backgroundColor: "#ffffff" }}
-        className="animate-pulse"
-      />
-    );
+    return null; // Retorna nulo no placeholder inicial para evitar frames brancos na gravação
   }
 
   const formatConfig = CAROUSEL_FORMATS[project.format];

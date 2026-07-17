@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { useProjectsStore, useEditorStore, useUiStore } from "@/stores";
+import { useAutosave } from "@/hooks/use-autosave";
 import { EditorHeader } from "./editor-header";
 import { SlidesSidebar } from "./slides-sidebar";
 import { CanvasWorkspace } from "./canvas-workspace";
@@ -17,11 +18,9 @@ export function EditorShell({ projectId }: EditorShellProps) {
   const {
     activeSlideId,
     setActiveSlideId,
-    selectedElementId,
     setSelectedElementId,
     zoom,
     setZoom,
-    autosaveStatus,
     setAutosaveStatus,
     undo,
     redo,
@@ -31,10 +30,21 @@ export function EditorShell({ projectId }: EditorShellProps) {
   const { addNotification } = useUiStore();
 
   const project = projects.find((p) => p.id === projectId);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const isFirstRender = useRef(true);
 
-  // Referências estáveis para atalhos de teclado (evita reinicializar event listener)
+  // Instanciar o hook de Autosave dedicado
+  const { saveStatus, markDirty, saveNow } = useAutosave({
+    onSave: () => {
+      // Opcional: Aqui poderíamos disparar gravação remota na API
+    },
+  });
+
+  // Sincronizar o status do hook local com o Zustand (Header consome do Zustand)
+  useEffect(() => {
+    setAutosaveStatus(saveStatus);
+  }, [saveStatus, setAutosaveStatus]);
+
+  // Referências estáveis para variáveis de estado
   const projectRef = useRef(project);
   const activeSlideIdRef = useRef(activeSlideId);
   const zoomRef = useRef(zoom);
@@ -45,7 +55,36 @@ export function EditorShell({ projectId }: EditorShellProps) {
     zoomRef.current = zoom;
   });
 
-  // 1. AUTOSAVE DEBOUNCE EFFECT
+  // Referências estáveis para actions e callbacks da store (previne closures obsoletas)
+  const actionsRef = useRef({
+    undo,
+    redo,
+    updateProject,
+    deleteSlide,
+    pushHistory,
+    setActiveSlideId,
+    setSelectedElementId,
+    setZoom,
+    addNotification,
+    saveNow,
+  });
+
+  useEffect(() => {
+    actionsRef.current = {
+      undo,
+      redo,
+      updateProject,
+      deleteSlide,
+      pushHistory,
+      setActiveSlideId,
+      setSelectedElementId,
+      setZoom,
+      addNotification,
+      saveNow,
+    };
+  });
+
+  // 1. AUTOSAVE TRIGGER EFFECT
   useEffect(() => {
     if (!project || !hasHydrated) return;
 
@@ -55,25 +94,10 @@ export function EditorShell({ projectId }: EditorShellProps) {
       return;
     }
 
-    if (autosaveStatus === "saved") {
-      setAutosaveStatus("unsaved");
-    }
+    markDirty();
+  }, [project?.slides, project?.title, project?.caption, hasHydrated, markDirty, project]);
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    debounceRef.current = setTimeout(() => {
-      setAutosaveStatus("saving");
-      setTimeout(() => {
-        setAutosaveStatus("saved");
-      }, 800);
-    }, 2000);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [project?.slides, project?.title, project?.caption, hasHydrated]);
-
-  // 2. KEYBOARD SHORTCUTS (Estável, registrado apenas uma vez)
+  // 2. KEYBOARD SHORTCUTS
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
@@ -103,44 +127,41 @@ export function EditorShell({ projectId }: EditorShellProps) {
         e.preventDefault();
         if (e.shiftKey) {
           const currentState = JSON.stringify(currentProject);
-          const res = redo(currentState);
-          if (res.success) updateProject(projectId, JSON.parse(res.restoredState));
+          const res = actionsRef.current.redo(currentState);
+          if (res.success) actionsRef.current.updateProject(projectId, JSON.parse(res.restoredState));
         } else {
           const currentState = JSON.stringify(currentProject);
-          const res = undo(currentState);
-          if (res.success) updateProject(projectId, JSON.parse(res.restoredState));
+          const res = actionsRef.current.undo(currentState);
+          if (res.success) actionsRef.current.updateProject(projectId, JSON.parse(res.restoredState));
         }
       }
       // Save manual
       else if (isCtrl && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        setAutosaveStatus("saving");
-        setTimeout(() => {
-          setAutosaveStatus("saved");
-          addNotification("Salvo Manualmente", "Projeto salvo no armazenamento local.", "success");
-        }, 500);
+        actionsRef.current.saveNow();
+        actionsRef.current.addNotification("Salvo Manualmente", "Projeto salvo no armazenamento local.", "success");
       }
       // Escape selection
       else if (e.key === "Escape") {
         e.preventDefault();
-        setSelectedElementId(null);
+        actionsRef.current.setSelectedElementId(null);
       }
       // Zoom
       else if (e.key === "+" || (isCtrl && e.key === "=")) {
         e.preventDefault();
-        setZoom(Math.min(150, currentZoom + 10));
+        actionsRef.current.setZoom(Math.min(150, currentZoom + 10));
       } else if (e.key === "-" || (isCtrl && e.key === "-")) {
         e.preventDefault();
-        setZoom(Math.max(50, currentZoom - 10));
+        actionsRef.current.setZoom(Math.max(50, currentZoom - 10));
       }
       // Navegação por setas
       else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
         const currentIndex = currentProject.slides.findIndex((s) => s.id === currentActiveSlideId);
         if (e.key === "ArrowUp" && currentIndex > 0) {
-          setActiveSlideId(currentProject.slides[currentIndex - 1].id);
+          actionsRef.current.setActiveSlideId(currentProject.slides[currentIndex - 1].id);
         } else if (e.key === "ArrowDown" && currentIndex < currentProject.slides.length - 1) {
-          setActiveSlideId(currentProject.slides[currentIndex + 1].id);
+          actionsRef.current.setActiveSlideId(currentProject.slides[currentIndex + 1].id);
         }
       }
       // Exclusão de slide por atalho (Delete ou Backspace)
@@ -148,12 +169,12 @@ export function EditorShell({ projectId }: EditorShellProps) {
         if (currentActiveSlideId && currentProject.slides.length > 1) {
           e.preventDefault();
           if (confirm("Deseja realmente excluir o slide ativo?")) {
-            pushHistory(JSON.stringify(currentProject));
-            deleteSlide(projectId, currentActiveSlideId);
+            actionsRef.current.pushHistory(JSON.stringify(currentProject));
+            actionsRef.current.deleteSlide(projectId, currentActiveSlideId);
             
             const remaining = currentProject.slides.filter((s) => s.id !== currentActiveSlideId);
-            setActiveSlideId(remaining[0]?.id || null);
-            addNotification("Slide excluído", "Slide removido através do atalho de teclado.", "info");
+            actionsRef.current.setActiveSlideId(remaining[0]?.id || null);
+            actionsRef.current.addNotification("Slide excluído", "Slide removido através do atalho de teclado.", "info");
           }
         }
       }

@@ -38,7 +38,7 @@ export default function DashboardPage() {
   // Estatísticas
   const totalProjects = projects.length;
   const totalSlides = projects.reduce((acc, p) => acc + p.slides.length, 0);
-  const totalExports = projects.filter((p) => p.status === "published").length * 3 + 12;
+  const totalExports = projects.filter((p) => p.status === "published").length;
 
   const handleCreateCardClick = (goal: string, tone: string, theme: string) => {
     addNotification(
@@ -64,8 +64,8 @@ export default function DashboardPage() {
             Bem-vindo de volta, Alex! 👋
           </h2>
           <p className="text-xs text-slate-500 max-w-lg leading-relaxed font-semibold">
-            Seu assistente criativo está pronto. O engajamento das suas publicações subiu
-            <span className="text-emerald-600 font-bold"> +12.4%</span> esta semana. Vamos gerar algo incrível hoje!
+            Seu assistente criativo está pronto. A estimativa simulada de alcance das suas publicações subiu
+            <span className="text-emerald-600 font-bold"> +12.4%</span> esta semana baseada no histórico local.
           </p>
         </div>
         <Link
@@ -77,7 +77,13 @@ export default function DashboardPage() {
         </Link>
       </section>
 
-      {/* Stats Cards */}
+      {/* Stats Section with Demo Badge */}
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-bold text-slate-800 tracking-tight">Resumo da Conta</h3>
+        <span className="text-[8px] font-black uppercase bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full border border-slate-200">
+          Dados de Demonstração
+        </span>
+      </div>
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 border border-violet-100 shrink-0">
@@ -271,7 +277,9 @@ export default function DashboardPage() {
                       </button>
                       <button
                         onClick={() => {
-                          deleteProject(p.id);
+                          if (confirm(`Deseja realmente excluir o projeto '${p.title}'?`)) {
+                            deleteProject(p.id);
+                          }
                           setActiveMenuId(null);
                         }}
                         className="w-full text-left px-3 py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"

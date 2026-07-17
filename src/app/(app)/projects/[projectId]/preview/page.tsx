@@ -7,6 +7,7 @@ import { SlideCanvas } from "@/components/slides/slide-canvas";
 import { SlideRenderer } from "@/components/slides/slide-renderer";
 import { CAROUSEL_FORMATS } from "@/constants/formats";
 import { ArrowLeft, ChevronLeft, ChevronRight, Edit3, Download } from "lucide-react";
+import { EditorModals } from "@/components/editor/editor-modals";
 
 export default function ProjectPreviewPage() {
   const params = useParams();
@@ -126,6 +127,7 @@ export default function ProjectPreviewPage() {
           </div>
         </div>
       </div>
+      <EditorModals projectId={projectId} />
     </div>
   );
 }

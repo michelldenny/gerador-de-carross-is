@@ -215,8 +215,10 @@ export default function BrandsPage() {
               </div>
               <button
                 onClick={() => {
-                  deleteBrand(b.id);
-                  addNotification("Marca excluída", `Identidade visual de '${b.name}' foi removida.`, "info");
+                  if (confirm(`Deseja realmente excluir a marca '${b.name}'?`)) {
+                    deleteBrand(b.id);
+                    addNotification("Marca excluída", `Identidade visual de '${b.name}' foi removida.`, "info");
+                  }
                 }}
                 className="p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all"
                 title="Excluir Marca"

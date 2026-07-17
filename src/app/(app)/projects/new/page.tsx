@@ -1047,7 +1047,7 @@ function NewProjectForm() {
           </div>
 
           <div className="space-y-2">
-            <h3 className="font-bold text-base text-slate-800">Gerando seu Carrossel Profissional...</h3>
+            <h3 className="font-bold text-base text-slate-800">Criando a estrutura dos slides...</h3>
             <p className="text-xs text-slate-400 font-semibold max-w-xs mx-auto leading-relaxed">{generationStep}</p>
           </div>
 

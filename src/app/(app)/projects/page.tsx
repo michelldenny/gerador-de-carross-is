@@ -232,7 +232,9 @@ export default function ProjectsPage() {
                       </button>
                       <button
                         onClick={() => {
-                          deleteProject(p.id);
+                          if (confirm(`Deseja realmente excluir o projeto '${p.title}'?`)) {
+                            deleteProject(p.id);
+                          }
                           setActiveMenuId(null);
                         }}
                         className="w-full text-left px-3 py-2 text-[10px] font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"
@@ -297,7 +299,11 @@ export default function ProjectsPage() {
                       <Copy size={16} />
                     </button>
                     <button
-                      onClick={() => deleteProject(p.id)}
+                      onClick={() => {
+                        if (confirm(`Deseja realmente excluir o projeto '${p.title}'?`)) {
+                          deleteProject(p.id);
+                        }
+                      }}
                       className="p-2 hover:bg-rose-50 rounded-lg text-rose-500 hover:text-rose-700 transition-colors"
                     >
                       <Trash2 size={16} />

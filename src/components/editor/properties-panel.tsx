@@ -36,7 +36,7 @@ export function PropertiesPanel({ projectId }: PropertiesPanelProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as ActiveTab)}
-              className={`flex-1 flex flex-col items-center gap-1.5 py-3 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              className={`flex-1 flex flex-col items-center gap-1.5 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
                 isActive
                   ? "bg-white text-violet-700 border-b-2 border-violet-600"
                   : "text-slate-400 hover:text-slate-600 hover:bg-slate-100/50"
@@ -64,7 +64,7 @@ export function PropertiesPanel({ projectId }: PropertiesPanelProps) {
           onClick={() => {
             setActiveTab("caption");
           }}
-          className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 rounded-xl text-[10px] flex items-center justify-center gap-1.5 transition-colors uppercase tracking-wider"
+          className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors uppercase tracking-wider"
         >
           <FileText size={12} /> Editar Legenda do Post
         </button>

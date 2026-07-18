@@ -29,7 +29,10 @@ export async function POST(request: Request) {
 
   try {
     const result = await generateCarousel(parsed.data);
-    if (!result.validation.valid) {
+    if (
+      !result.validation.valid ||
+      (parsed.data.editorialMode === "editorial" && !result.review.approved)
+    ) {
       return NextResponse.json(
         { error: "Conteúdo reprovado pelos validadores", ...result },
         { status: 422 }

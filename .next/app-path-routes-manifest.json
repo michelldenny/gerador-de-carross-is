@@ -1,16 +1,16 @@
 {
   "/_not-found/page": "/_not-found",
   "/api/ai/carousels/route": "/api/ai/carousels",
-  "/render/projects/[projectId]/slides/[slideId]/page": "/render/projects/[projectId]/slides/[slideId]",
   "/page": "/",
-  "/(app)/brands/page": "/brands",
-  "/(app)/dashboard/page": "/dashboard",
+  "/render/projects/[projectId]/slides/[slideId]/page": "/render/projects/[projectId]/slides/[slideId]",
   "/(app)/files/page": "/files",
+  "/(app)/dashboard/page": "/dashboard",
+  "/(app)/brands/page": "/brands",
   "/(app)/projects/[projectId]/editor/page": "/projects/[projectId]/editor",
-  "/(app)/help/page": "/help",
+  "/(app)/projects/new/page": "/projects/new",
   "/(app)/projects/[projectId]/preview/page": "/projects/[projectId]/preview",
-  "/(app)/projects/page": "/projects",
+  "/(app)/help/page": "/help",
   "/(app)/settings/page": "/settings",
-  "/(app)/templates/page": "/templates",
-  "/(app)/projects/new/page": "/projects/new"
+  "/(app)/projects/page": "/projects",
+  "/(app)/templates/page": "/templates"
 }

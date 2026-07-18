@@ -473,6 +473,9 @@ function NewProjectForm() {
         generationMetadata: {
           trace: generationResult.trace,
           validation: generationResult.validation,
+          review: generationResult.review,
+          corrections: generationResult.corrections,
+          approval: generationResult.approval,
           generatedAt: new Date().toISOString(),
         },
       };

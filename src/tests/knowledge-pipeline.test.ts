@@ -35,6 +35,7 @@ describe("Base de conhecimento BrandsDecoded", () => {
   it("recupera conteúdo real dentro do orçamento", async () => {
     const chunks = await retrieveKnowledge({
       mode: "editorial",
+      operation: "write",
       query: "headline estrutura editorial fatos design",
       tokenBudget: 1_200,
     });
@@ -55,6 +56,11 @@ describe("Base de conhecimento BrandsDecoded", () => {
     expect(blocks).toHaveLength(18);
     expect(result.trace.retrievedChunks.length).toBeGreaterThan(0);
     expect(result.trace.promptHashes.system).toMatch(/^[a-f0-9]{64}$/);
+    expect(result.trace.retrieval.operation).toBe("write");
+    expect(result.trace.retrieval.selectedTokenEstimate).toBeLessThanOrEqual(3_500);
     expect(result.validation.valid).toBe(true);
+    expect(result.review.approved).toBe(true);
+    expect(result.approval.editoriallyApproved).toBe(true);
+    expect(result.approval.visuallyApproved).toBe(false);
   });
 });

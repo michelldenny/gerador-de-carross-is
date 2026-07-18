@@ -87,6 +87,7 @@ export const aiCarouselResponseSchema = z.object({
         text: z.string(),
         evidenceIds: z.array(z.string()).optional(),
       })).optional(),
+      evidenceIds: z.array(z.string()).optional(),
       title: z.string().optional(),
       subtitle: z.string().optional(),
       body: z.string().optional(),

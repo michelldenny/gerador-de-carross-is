@@ -1,4 +1,4 @@
-// File: C:\Users\miche\Desktop\gerador-de-carross-is\src\app\api\ai\carousels\route.ts
+// File: C:\Users\miche\Downloads\gerador-de-carross-is-main\gerador-de-carross-is-main\src\app\api\ai\carousels\route.ts
 import * as entry from '../../../../../../src/app/api/ai/carousels/route.js'
 import type { NextRequest } from 'next/server.js'
 

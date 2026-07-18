@@ -92,6 +92,11 @@ async function loadAllKnowledge(): Promise<KnowledgeChunk[]> {
 }
 
 export function loadKnowledgeChunks(): Promise<KnowledgeChunk[]> {
+  if (process.env.NODE_ENV === "development") return loadAllKnowledge();
   chunkCache ??= loadAllKnowledge();
   return chunkCache;
+}
+
+export function clearKnowledgeCache() {
+  chunkCache = undefined;
 }

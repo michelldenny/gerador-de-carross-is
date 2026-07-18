@@ -80,19 +80,24 @@ export function validateCarousel(
           });
         }
       }
-      if (/\b\d+(?:[.,]\d+)?\s*(?:%|milh(?:ão|ões)|bilh(?:ão|ões)|R\$)\b/i.test(value)) {
-        const fieldEvidenceIds = slide.blocks
+      if (/\b\d+(?:[.,]\d+)?\s*(?:%|milh(?:ão|ões)\b|bilh(?:ão|ões)\b|R\$)/i.test(value)) {
+        const fieldEvidenceIds = [
+          ...(slide.evidenceIds ?? []),
+          ...(slide.blocks
           ?.filter((block) => `blocks.${block.id}` === field)
-          .flatMap((block) => block.evidenceIds ?? []) ?? [];
+          .flatMap((block) => block.evidenceIds ?? []) ?? []),
+        ];
         const hasEvidence = fieldEvidenceIds.some((id) => verifiedEvidence.has(id));
-        violations.push({
-          code: "POSSIBLE_UNSOURCED_CLAIM",
-          severity: input.editorialMode === "editorial" && !hasEvidence ? "error" : "warning",
-          slide: slide.order,
-          field,
-          message: "Possível dado factual; exige evidência antes de publicação",
-          kind: "heuristic",
-        });
+        if (!hasEvidence) {
+          violations.push({
+            code: "FACTUAL_CLAIM_MISSING_EVIDENCE",
+            severity: input.editorialMode === "editorial" ? "error" : "warning",
+            slide: slide.order,
+            field,
+            message: "Dado factual sem evidência associada",
+            kind: "heuristic",
+          });
+        }
       }
     }
   });
@@ -127,8 +132,14 @@ export function validateCarousel(
     });
   }
 
+  const valid = !violations.some((violation) => violation.severity === "error");
   return {
-    valid: !violations.some((violation) => violation.severity === "error"),
+    valid,
+    status: !valid
+      ? "rejected"
+      : violations.length > 0
+        ? "approved_with_warnings"
+        : "approved",
     violations,
   };
 }

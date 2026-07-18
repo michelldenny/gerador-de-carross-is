@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import "@fontsource/plus-jakarta-sans/400.css";
+import "@fontsource/plus-jakarta-sans/600.css";
+import "@fontsource/plus-jakarta-sans/700.css";
+import "@fontsource/plus-jakarta-sans/800.css";
+import "@fontsource/barlow-condensed/700.css";
+import "@fontsource/barlow-condensed/900.css";
 import "./globals.css";
 import { Toaster } from "sonner";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Gerador de Carrosséis - Instagram Pro",
@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${plusJakartaSans.className} antialiased min-h-screen bg-slate-50 text-slate-800`}>
+      <body className="font-sans antialiased min-h-screen bg-slate-50 text-slate-800">
         {children}
         <Toaster position="top-right" richColors />
       </body>

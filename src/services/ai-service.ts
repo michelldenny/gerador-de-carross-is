@@ -18,6 +18,9 @@ export async function generateCarouselWithAI(
   return {
     carousel: aiCarouselResponseSchema.parse(payload.carousel),
     validation: payload.validation!,
+    review: payload.review!,
+    corrections: payload.corrections ?? [],
+    approval: payload.approval!,
     trace: payload.trace!,
   };
 }

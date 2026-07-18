@@ -37,7 +37,31 @@ export interface ValidationViolation {
 
 export interface CarouselValidationResult {
   valid: boolean;
+  status: "approved" | "approved_with_warnings" | "rejected";
   violations: ValidationViolation[];
+}
+
+export interface EditorialReview {
+  approved: boolean;
+  scores: {
+    grammar: number;
+    fluency: number;
+    antiAiSlop: number;
+    facts: number;
+    structure: number;
+    density: number;
+    editorialTone: number;
+  };
+  notes: string[];
+}
+
+export interface AppliedCorrection {
+  attempt: number;
+  slide?: number;
+  field: string;
+  codes: string[];
+  previousValueHash: string;
+  newValueHash: string;
 }
 
 export interface GenerationTrace {
@@ -54,11 +78,27 @@ export interface GenerationTrace {
     contentHash: string;
     tokenEstimate: number;
   }>;
+  retrieval: {
+    version: string;
+    operation: string;
+    tokenBudget: number;
+    selectedTokenEstimate: number;
+    selectedCount: number;
+  };
 }
 
 export interface GenerateCarouselResult {
   carousel: AICarouselResponse;
   validation: CarouselValidationResult;
+  review: EditorialReview;
+  corrections: AppliedCorrection[];
+  approval: {
+    schemaValid: boolean;
+    deterministicallyValid: boolean;
+    factuallyVerified: boolean;
+    editoriallyApproved: boolean;
+    visuallyApproved: boolean;
+  };
   trace: GenerationTrace;
 }
 
@@ -96,6 +136,7 @@ export interface AICarouselResponse {
       text: string;
       evidenceIds?: string[];
     }>;
+    evidenceIds?: string[];
     title?: string;
     subtitle?: string;
     body?: string;

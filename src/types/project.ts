@@ -2,7 +2,9 @@ import { Slide } from "./slide";
 import type {
   CarouselValidationResult,
   EditorialMode,
+  EditorialReview,
   GenerationTrace,
+  AppliedCorrection,
 } from "./ai";
 
 export type CarouselFormat = "vertical" | "square" | "story";
@@ -24,6 +26,15 @@ export interface Project {
   generationMetadata?: {
     trace: GenerationTrace;
     validation: CarouselValidationResult;
+    review: EditorialReview;
+    corrections: AppliedCorrection[];
+    approval: {
+      schemaValid: boolean;
+      deterministicallyValid: boolean;
+      factuallyVerified: boolean;
+      editoriallyApproved: boolean;
+      visuallyApproved: boolean;
+    };
     generatedAt: string;
   };
 }

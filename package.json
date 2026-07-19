@@ -17,6 +17,8 @@
     "@fontsource/barlow-condensed": "^5.2.8",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@hookform/resolvers": "^3.9.1",
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.7",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
     "html2canvas": "^1.4.1",

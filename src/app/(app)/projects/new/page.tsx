@@ -382,9 +382,7 @@ function NewProjectForm() {
       // Salvar nova marca na store se solicitado
       let finalBrandId = formData.brandId;
       if (formData.saveAsBrand && formData.newBrandName) {
-        const brandId = `brand-${Date.now()}`;
-        addBrand({
-          id: brandId,
+        const newBrand = await addBrand({
           name: formData.newBrandName,
           logoText: formData.newBrandName.substring(0, 12),
           instagramHandle: "@nova_marca",
@@ -395,9 +393,8 @@ function NewProjectForm() {
           textColor: formData.primaryColor || "#0f172a",
           fontFamily: formData.fontFamily || "Inter",
           defaultCta: formData.cta,
-          projectCount: 1,
         });
-        finalBrandId = brandId;
+        finalBrandId = newBrand.id;
       }
 
       const brand = brands.find((b) => b.id === finalBrandId) || brands[0];

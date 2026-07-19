@@ -9,7 +9,7 @@ interface DesignPropertiesProps {
 }
 
 export function DesignProperties({ projectId }: DesignPropertiesProps) {
-  const { projects, updateSlide, updateProject } = useProjectsStore();
+  const { projects, updateSlide, reorderSlides } = useProjectsStore();
   const { activeSlideId, pushHistory } = useEditorStore();
   const { addNotification } = useUiStore();
   const { brands } = useBrandsStore();
@@ -55,7 +55,7 @@ export function DesignProperties({ projectId }: DesignPropertiesProps) {
           fontFamily: activeSlide.styles.fontFamily,
         },
       }));
-      updateProject(projectId, { slides: updatedSlides });
+      reorderSlides(projectId, updatedSlides);
       addNotification("Visual Aplicado", "Estilo unificado em todo o projeto.", "success");
     }
   };

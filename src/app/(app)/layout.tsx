@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUiStore, useCreditsStore, useProjectsStore } from "@/stores";
+import { useUiStore, useCreditsStore, useProjectsStore, useBrandsStore } from "@/stores";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -39,6 +39,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
+    // Carregar marcas e projetos do Supabase na inicialização do App
+    useBrandsStore.getState().fetchBrands();
+    useProjectsStore.getState().fetchProjects();
   }, []);
 
   // Fechar sidebar de mobile ao navegar

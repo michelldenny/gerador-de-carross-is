@@ -1,43 +1,89 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
 import { Brand } from "@/types";
-import { MOCK_BRANDS } from "@/mocks";
-import { safeStorage } from "./storage";
+import { brandsService } from "@/services/brands";
 
 interface BrandsState {
   brands: Brand[];
   hasHydrated: boolean;
+  isLoading: boolean;
+  error: string | null;
   setHasHydrated: (state: boolean) => void;
-  addBrand: (brand: Brand) => void;
-  updateBrand: (brandId: string, updates: Partial<Brand>) => void;
-  deleteBrand: (brandId: string) => void;
+  fetchBrands: () => Promise<void>;
+  addBrand: (brand: Omit<Brand, "id" | "projectCount">) => Promise<Brand>;
+  updateBrand: (brandId: string, updates: Partial<Omit<Brand, "id" | "projectCount">>) => Promise<void>;
+  deleteBrand: (brandId: string) => Promise<void>;
 }
 
-export const useBrandsStore = create<BrandsState>()(
-  persist(
-    (set) => ({
-      brands: MOCK_BRANDS,
-      hasHydrated: false,
-      setHasHydrated: (state) => set({ hasHydrated: state }),
-      addBrand: (brand) =>
-        set((state) => ({ brands: [brand, ...state.brands] })),
-      updateBrand: (brandId, updates) =>
-        set((state) => ({
-          brands: state.brands.map((b) =>
-            b.id === brandId ? { ...b, ...updates } : b
-          ),
-        })),
-      deleteBrand: (brandId) =>
-        set((state) => ({
-          brands: state.brands.filter((b) => b.id !== brandId),
-        })),
-    }),
-    {
-      name: "carousel_pro_brands",
-      storage: createJSONStorage(() => safeStorage),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
-      },
+export const useBrandsStore = create<BrandsState>((set, get) => ({
+  brands: [],
+  hasHydrated: false,
+  isLoading: false,
+  error: null,
+
+  setHasHydrated: (state) => set({ hasHydrated: state }),
+
+  fetchBrands: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const brands = await brandsService.getBrands();
+      set({ brands, isLoading: false, hasHydrated: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao carregar marcas";
+      set({ error: message, isLoading: false, hasHydrated: true });
     }
-  )
-);
+  },
+
+  addBrand: async (brandData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newBrand = await brandsService.createBrand(brandData);
+      set((state) => ({
+        brands: [newBrand, ...state.brands],
+        isLoading: false,
+      }));
+      return newBrand;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao criar marca";
+      set({ error: message, isLoading: false });
+      throw err;
+    }
+  },
+
+  updateBrand: async (brandId, updates) => {
+    const previousBrands = get().brands;
+    
+    // Atualização otimista
+    set((state) => ({
+      brands: state.brands.map((b) =>
+        b.id === brandId ? { ...b, ...updates } : b
+      ),
+    }));
+
+    try {
+      await brandsService.updateBrand(brandId, updates);
+    } catch (err: unknown) {
+      // Reverter em caso de erro
+      const message = err instanceof Error ? err.message : "Erro ao atualizar marca";
+      set({ brands: previousBrands, error: message });
+      throw err;
+    }
+  },
+
+  deleteBrand: async (brandId) => {
+    const previousBrands = get().brands;
+
+    // Atualização otimista
+    set((state) => ({
+      brands: state.brands.filter((b) => b.id !== brandId),
+    }));
+
+    try {
+      await brandsService.deleteBrand(brandId);
+    } catch (err: unknown) {
+      // Reverter em caso de erro
+      const message = err instanceof Error ? err.message : "Erro ao excluir marca";
+      set({ brands: previousBrands, error: message });
+      throw err;
+    }
+  },
+}));

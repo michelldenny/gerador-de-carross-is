@@ -37,25 +37,36 @@ export default function BrandsPage() {
       defaultCta: "Confira no link da bio!",
     },
   });
-
-  const onSubmitForm = (data: Brand) => {
-    const newBrand: Brand = {
-      ...data,
-      id: `brand-${Date.now()}`,
-      logoText: data.logoText || data.name.slice(0, 8),
-      projectCount: 0,
-    };
-
-    addBrand(newBrand);
-    setIsAdding(false);
-    reset();
-    addNotification(
-      "Marca cadastrada",
-      `A identidade visual de '${newBrand.name}' está disponível.`,
-      "success"
-    );
+  const onSubmitForm = async (data: Brand) => {
+    try {
+      const newBrand = await addBrand({
+        name: data.name,
+        logoUrl: data.logoUrl || undefined,
+        logoText: data.logoText || data.name.slice(0, 8),
+        primaryColor: data.primaryColor,
+        secondaryColor: data.secondaryColor,
+        accentColor: data.accentColor,
+        backgroundColor: data.backgroundColor,
+        textColor: data.textColor,
+        fontFamily: data.fontFamily,
+        secondaryFontFamily: data.secondaryFontFamily || undefined,
+        instagramHandle: data.instagramHandle || "",
+        website: data.website || undefined,
+        phone: data.phone || undefined,
+        defaultCta: data.defaultCta || "",
+      });
+      setIsAdding(false);
+      reset();
+      addNotification(
+        "Marca cadastrada",
+        `A identidade visual de '${newBrand.name}' está disponível.`,
+        "success"
+      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao cadastrar marca";
+      addNotification("Erro ao cadastrar", message, "warning");
+    }
   };
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Title Header */}

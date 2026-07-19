@@ -3,14 +3,14 @@
   "/api/ai/carousels/route": "app/api/ai/carousels/route.js",
   "/page": "app/page.js",
   "/render/projects/[projectId]/slides/[slideId]/page": "app/render/projects/[projectId]/slides/[slideId]/page.js",
-  "/(app)/files/page": "app/(app)/files/page.js",
-  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/brands/page": "app/(app)/brands/page.js",
-  "/(app)/projects/[projectId]/editor/page": "app/(app)/projects/[projectId]/editor/page.js",
-  "/(app)/projects/new/page": "app/(app)/projects/new/page.js",
-  "/(app)/projects/[projectId]/preview/page": "app/(app)/projects/[projectId]/preview/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/help/page": "app/(app)/help/page.js",
-  "/(app)/settings/page": "app/(app)/settings/page.js",
+  "/(app)/files/page": "app/(app)/files/page.js",
   "/(app)/projects/page": "app/(app)/projects/page.js",
-  "/(app)/templates/page": "app/(app)/templates/page.js"
+  "/(app)/projects/[projectId]/preview/page": "app/(app)/projects/[projectId]/preview/page.js",
+  "/(app)/templates/page": "app/(app)/templates/page.js",
+  "/(app)/projects/[projectId]/editor/page": "app/(app)/projects/[projectId]/editor/page.js",
+  "/(app)/settings/page": "app/(app)/settings/page.js",
+  "/(app)/projects/new/page": "app/(app)/projects/new/page.js"
 }

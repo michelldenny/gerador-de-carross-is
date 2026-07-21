@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useProjectsStore, useBrandsStore, useUiStore, useCreditsStore } from "@/stores";
+import { createClient } from "@/utils/supabase/client";
 import { SlideCanvas } from "@/components/slides/slide-canvas";
 import { SlideRenderer } from "@/components/slides/slide-renderer";
 import {
@@ -31,6 +32,30 @@ export default function DashboardPage() {
   const { credits } = useCreditsStore();
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [userName, setUserName] = useState("Alex");
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name;
+          if (displayName) {
+            setUserName(displayName);
+          } else {
+            const emailName = user.email?.split("@")[0];
+            if (emailName) {
+              setUserName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao carregar usuário no dashboard:", err);
+      }
+    }
+    loadUser();
+  }, []);
 
   // Primeiros 3 projetos como "Recentes"
   const recentProjects = projects.slice(0, 3);
@@ -61,11 +86,10 @@ export default function DashboardPage() {
         <div className="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-violet-400/10 blur-3xl pointer-events-none" />
         <div className="space-y-2 relative z-10">
           <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-            Bem-vindo de volta, Alex! 👋
+            Bem-vindo de volta, {userName}! 👋
           </h2>
           <p className="text-xs text-slate-500 max-w-lg leading-relaxed font-semibold">
-            Seu assistente criativo está pronto. A estimativa simulada de alcance das suas publicações subiu
-            <span className="text-emerald-600 font-bold"> +12.4%</span> esta semana baseada no histórico local.
+            Seu assistente criativo está pronto. Comece a criar carrosséis de alto engajamento para as suas redes sociais.
           </p>
         </div>
         <Link

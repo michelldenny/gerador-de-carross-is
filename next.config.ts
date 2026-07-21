@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./knowledge/**/*"],
+    "/**/*": ["./knowledge/**/*"],
+  },
   images: {
     remotePatterns: [
       {

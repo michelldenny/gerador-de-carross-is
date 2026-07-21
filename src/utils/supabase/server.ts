@@ -3,7 +3,13 @@ import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 
 export async function createClient() {
-  const cookieStore = await cookies()
+  let cookieStore: Awaited<ReturnType<typeof cookies>> | undefined;
+  try {
+    cookieStore = await cookies();
+  } catch {
+    // Fora do contexto de requisição HTTP (ex: testes unitários)
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
@@ -13,15 +19,16 @@ export async function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore ? cookieStore.getAll() : []
         },
         setAll(cookiesToSet) {
+          if (!cookieStore) return
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
           } catch {
-            // O método setAll pode ser chamado a partir de um Server Component.
+            // Ignorado em Server Components
           }
         },
       },

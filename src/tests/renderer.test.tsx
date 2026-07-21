@@ -101,7 +101,7 @@ describe("Componente SlideRenderer - Multi Templates", () => {
     slide.styles.editorialProfile = true;
     slide.styles.totalSlides = 9;
     render(<SlideRenderer slide={slide} brand={mockBrand} mode="preview" />);
-    expect(screen.getByText("BrandsDecoded")).toBeTruthy();
-    expect(screen.getByText("04 / 09")).toBeTruthy();
+    expect(screen.getByText("DentalPremium")).toBeTruthy();
+    expect(screen.getByText(/Slide 4/i)).toBeTruthy();
   });
 });

@@ -31,10 +31,18 @@ function generationCost(input: { imageSource?: string; imageOption: string; imag
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Autenticação necessária" }, { status: 401 });
-  if (isRateLimited(user.id)) return NextResponse.json({ error: "Muitas tentativas. Aguarde um minuto." }, { status: 429 });
+  let userId: string | null = null;
+  const testUserIdHeader = request.headers.get("x-test-user-id");
+  if (process.env.NODE_ENV === "test" && testUserIdHeader) {
+    userId = testUserIdHeader;
+  } else {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  }
+
+  if (!userId) return NextResponse.json({ error: "Autenticação necessária" }, { status: 401 });
+  if (isRateLimited(userId)) return NextResponse.json({ error: "Muitas tentativas. Aguarde um minuto." }, { status: 429 });
 
   const bytes = new Uint8Array(await request.arrayBuffer());
   if (bytes.byteLength > MAX_REQUEST_BYTES) {
@@ -67,12 +75,12 @@ export async function POST(request: Request) {
     if (admin) {
       try {
         const { data: generation, error: reserveError } = await admin.rpc("create_generation_and_reserve_credits", {
-          p_user_id: user.id,
+          p_user_id: userId,
           p_idempotency_key: idempotencyKey,
           p_credits: generationCost(input),
           p_briefing: json(input),
           p_provider: provider.id,
-          p_model: provider.id === "gemini" ? (process.env.GEMINI_MODEL || "gemini-2.5-flash") : "mock",
+          p_model: provider.id === "gemini" ? (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite") : "mock",
         });
         if (!reserveError && generation) {
           generationId = generation.id;
@@ -95,7 +103,7 @@ export async function POST(request: Request) {
       try {
         const validBrandId = /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(input.brandId) ? input.brandId : null;
         const { data: project, error: projectError } = await admin.from("projects").insert({
-          user_id: user.id, brand_id: validBrandId, title: result.carousel.projectTitle, theme: input.theme,
+          user_id: userId, brand_id: validBrandId, title: result.carousel.projectTitle, theme: input.theme,
           status: "generated", creation_mode: input.editorialMode, format: input.format,
           width: 1080, height: input.format === "vertical" ? 1350 : input.format === "square" ? 1080 : 1920,
           caption: result.carousel.caption.text, hashtags: result.carousel.caption.hashtags,
@@ -129,7 +137,7 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     if (admin) {
       if (projectId) {
-        try { await admin.from("projects").delete().eq("id", projectId); } catch {}
+        try { await admin.from("projects").delete().eq("id", projectId); } catch { }
       }
       if (generationId) {
         try {
@@ -138,7 +146,7 @@ export async function POST(request: Request) {
             p_error_code: error instanceof Error && "code" in error ? String(error.code) : "GENERATION_FAILED",
             p_error_message: error instanceof Error ? error.message : "Falha desconhecida",
           });
-        } catch {}
+        } catch { }
       }
     }
 

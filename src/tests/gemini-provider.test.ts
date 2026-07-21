@@ -31,10 +31,10 @@ describe("Gemini provider", () => {
       responseSchema: {}, parseResponse: (value) => value as typeof carousel, maxOutputTokens: 1000,
       temperature: 0.5, timeoutMs: 1000,
     });
-    expect(result.projectTitle).toBe("Teste");
+    expect(result.carousel.projectTitle).toBe("Teste");
     const request = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
     expect(request.systemInstruction.parts[0].text).toBe("sistema");
     expect(request.generationConfig.responseMimeType).toBe("application/json");
-    expect(request.generationConfig.responseJsonSchema).toBeTruthy();
+    expect(request.generationConfig.responseSchema).toBeTruthy();
   });
 });

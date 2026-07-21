@@ -104,7 +104,7 @@ export class GeminiProvider implements AIProvider {
       throw new Error("GEMINI_API_KEY não configurada no ambiente server-side");
     }
 
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const payload = {
@@ -160,7 +160,7 @@ export class GeminiProvider implements AIProvider {
     const completionTokens = Number(usageMetadata.candidatesTokenCount || 0);
     const totalTokens = Number(usageMetadata.totalTokenCount || promptTokens + completionTokens);
 
-    // gemini-2.5-flash / gemini-2.0-flash pricing: $0.10/1M prompt, $0.40/1M completion
+    // gemini-2.5-flash / gemini-3.5-flash-lite pricing: $0.10/1M prompt, $0.40/1M completion
     const promptCost = (promptTokens / 1_000_000) * 0.10;
     const completionCost = (completionTokens / 1_000_000) * 0.40;
     const estimatedCostUsd = Number((promptCost + completionCost).toFixed(6));

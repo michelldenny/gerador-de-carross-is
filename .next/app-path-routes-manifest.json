@@ -5,14 +5,14 @@
   "/login/page": "/login",
   "/page": "/",
   "/render/projects/[projectId]/slides/[slideId]/page": "/render/projects/[projectId]/slides/[slideId]",
+  "/(app)/files/page": "/files",
   "/(app)/brands/page": "/brands",
   "/(app)/dashboard/page": "/dashboard",
-  "/(app)/files/page": "/files",
-  "/(app)/help/page": "/help",
-  "/(app)/projects/[projectId]/editor/page": "/projects/[projectId]/editor",
   "/(app)/projects/[projectId]/preview/page": "/projects/[projectId]/preview",
-  "/(app)/projects/new/page": "/projects/new",
+  "/(app)/projects/[projectId]/editor/page": "/projects/[projectId]/editor",
+  "/(app)/help/page": "/help",
   "/(app)/projects/page": "/projects",
+  "/(app)/projects/new/page": "/projects/new",
   "/(app)/settings/page": "/settings",
   "/(app)/templates/page": "/templates"
 }

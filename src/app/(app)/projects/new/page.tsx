@@ -388,9 +388,10 @@ function NewProjectForm() {
       setGenerationState(100, "Concluído!", false);
       addNotification("Carrossel gerado", `'${generationResult.carousel.projectTitle}' está pronto no editor!`, "success");
       router.push(`/projects/${generationResult.projectId}/editor`);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      addNotification("Falha na Geração", "Erro ao processar criação.", "warning");
+      const errorMessage = err instanceof Error ? err.message : "Erro ao processar criação.";
+      addNotification("Falha na Geração", errorMessage, "warning");
       setGenerationState(0, "", false);
       setStep(4);
     }

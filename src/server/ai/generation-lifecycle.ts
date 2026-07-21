@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/utils/supabase/admin";
 import type { GenerateCarouselInput } from "@/types";
+import type { Database, Json } from "@/types/supabase";
 
 export interface GenerationRun {
   id: string;
@@ -10,12 +11,12 @@ export interface GenerationRun {
   status: "queued" | "running" | "completed" | "rejected" | "failed" | "cancelled";
   provider: string;
   model?: string | null;
-  briefing: any;
-  output?: any;
-  trace?: any;
-  validation?: any;
-  review?: any;
-  corrections?: any;
+  briefing: unknown;
+  output?: unknown;
+  trace?: unknown;
+  validation?: unknown;
+  review?: unknown;
+  corrections?: unknown;
   promptTokens?: number | null;
   completionTokens?: number | null;
   estimatedCostUsd?: number | null;
@@ -44,9 +45,9 @@ export async function reserveGenerationCredits(params: {
     p_user_id: params.userId,
     p_idempotency_key: params.idempotencyKey,
     p_credits: params.credits,
-    p_briefing: params.briefing as any,
+    p_briefing: params.briefing as unknown as Json,
     p_provider: params.provider ?? "mock",
-    p_model: params.model ?? null,
+    ...(params.model ? { p_model: params.model } : {}),
   });
 
   if (error) {
@@ -57,7 +58,7 @@ export async function reserveGenerationCredits(params: {
     throw new Error(`Falha ao reservar créditos: ${error.message}`);
   }
 
-  const row = data as any;
+  const row = data as Record<string, unknown>;
   return mapGenerationRunRow(row);
 }
 
@@ -75,7 +76,7 @@ export async function markGenerationRunning(generationId: string): Promise<Gener
     throw new Error(`Falha ao atualizar status da geração: ${error.message}`);
   }
 
-  return mapGenerationRunRow(data as any);
+  return mapGenerationRunRow(data as Record<string, unknown>);
 }
 
 /**
@@ -84,35 +85,44 @@ export async function markGenerationRunning(generationId: string): Promise<Gener
 export async function completeGenerationRun(params: {
   generationId: string;
   projectId?: string | null;
-  output: any;
-  trace: any;
-  validation: any;
-  review: any;
-  corrections?: any[];
+  output: unknown;
+  trace: unknown;
+  validation: unknown;
+  review: unknown;
+  corrections?: unknown[];
   promptTokens?: number;
   completionTokens?: number;
   estimatedCostUsd?: number;
 }): Promise<GenerationRun> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase.rpc("complete_generation", {
+
+  const rpcArgs: Database["public"]["Functions"]["complete_generation"]["Args"] = {
     p_generation_id: params.generationId,
     p_project_id: params.projectId ?? null,
-    p_output: params.output,
-    p_trace: params.trace,
-    p_validation: params.validation,
-    p_review: params.review,
-    p_corrections: params.corrections ?? [],
-    p_prompt_tokens: params.promptTokens ?? null,
-    p_completion_tokens: params.completionTokens ?? null,
-    p_estimated_cost_usd: params.estimatedCostUsd ?? null,
-  });
+    p_output: params.output as Json,
+    p_trace: params.trace as Json,
+    p_validation: params.validation as Json,
+    p_review: params.review as Json,
+    p_corrections: (params.corrections ?? []) as unknown as Json,
+  };
+  if (params.promptTokens !== undefined) {
+    rpcArgs.p_prompt_tokens = params.promptTokens;
+  }
+  if (params.completionTokens !== undefined) {
+    rpcArgs.p_completion_tokens = params.completionTokens;
+  }
+  if (params.estimatedCostUsd !== undefined) {
+    rpcArgs.p_estimated_cost_usd = params.estimatedCostUsd;
+  }
+
+  const { data, error } = await supabase.rpc("complete_generation", rpcArgs);
 
   if (error) {
     console.error("[Lifecycle] Erro ao concluir geração:", error);
     throw new Error(`Falha ao finalizar geração: ${error.message}`);
   }
 
-  return mapGenerationRunRow(data as any);
+  return mapGenerationRunRow(data as Record<string, unknown>);
 }
 
 /**
@@ -135,33 +145,33 @@ export async function failGenerationAndRefund(params: {
     throw new Error(`Falha ao estornar créditos: ${error.message}`);
   }
 
-  return mapGenerationRunRow(data as any);
+  return mapGenerationRunRow(data as Record<string, unknown>);
 }
 
-function mapGenerationRunRow(row: any): GenerationRun {
+function mapGenerationRunRow(row: Record<string, unknown>): GenerationRun {
   return {
-    id: row.id,
-    userId: row.user_id,
-    projectId: row.project_id,
-    idempotencyKey: row.idempotency_key,
-    status: row.status,
-    provider: row.provider,
-    model: row.model,
+    id: row.id as string,
+    userId: row.user_id as string,
+    projectId: row.project_id as string | null,
+    idempotencyKey: row.idempotency_key as string,
+    status: row.status as GenerationRun["status"],
+    provider: row.provider as string,
+    model: row.model as string | null,
     briefing: row.briefing,
     output: row.output,
     trace: row.trace,
     validation: row.validation,
     review: row.review,
     corrections: row.corrections,
-    promptTokens: row.prompt_tokens,
-    completionTokens: row.completion_tokens,
+    promptTokens: row.prompt_tokens as number | null,
+    completionTokens: row.completion_tokens as number | null,
     estimatedCostUsd: row.estimated_cost_usd ? Number(row.estimated_cost_usd) : null,
-    reservedCredits: row.reserved_credits,
-    errorCode: row.error_code,
-    errorMessage: row.error_message,
-    startedAt: row.started_at,
-    completedAt: row.completed_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    reservedCredits: row.reserved_credits as number,
+    errorCode: row.error_code as string | null,
+    errorMessage: row.error_message as string | null,
+    startedAt: row.started_at as string | null,
+    completedAt: row.completed_at as string | null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
   };
 }

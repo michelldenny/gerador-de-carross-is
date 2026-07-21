@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -536,7 +536,7 @@ export type Database = {
           p_estimated_cost_usd?: number
           p_generation_id: string
           p_output: Json
-          p_project_id: string
+          p_project_id?: string | null
           p_prompt_tokens?: number
           p_review: Json
           p_trace: Json

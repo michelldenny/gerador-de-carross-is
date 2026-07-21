@@ -10,6 +10,8 @@ import {
   failGenerationAndRefund,
 } from "@/server/ai/generation-lifecycle";
 import { getAIProvider } from "@/server/ai/providers/provider-factory";
+import { checkRateLimit } from "@/server/ai/security/rate-limiter";
+import { checkDailyBudgetLimit } from "@/server/ai/security/budget-guard";
 
 export const runtime = "nodejs";
 
@@ -51,7 +53,28 @@ export async function POST(request: Request) {
     );
   }
 
-  // 2. Parsing do Payload
+  // 2. Proteção de Rate Limiting
+  const rateCheck = checkRateLimit(userId);
+  if (!rateCheck.success) {
+    return NextResponse.json(
+      { error: "Limite de requisições excedido. Aguarde antes de tentar novamente." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rateCheck.retryAfterSeconds) },
+      }
+    );
+  }
+
+  // 3. Proteção de Teto Orçamentário Financeiro
+  const budgetCheck = await checkDailyBudgetLimit();
+  if (!budgetCheck.allowed) {
+    return NextResponse.json(
+      { error: "Limite orçamentário diário atingido. Tente novamente amanhã." },
+      { status: 429 }
+    );
+  }
+
+  // 4. Parsing do Payload
   let body: unknown;
   try {
     body = await request.json();
@@ -67,7 +90,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // 3. Chave de Idempotência
+  // 5. Chave de Idempotência
   const headerIdempotency = request.headers.get("x-idempotency-key");
   const bodyIdempotency = parsed.data.idempotencyKey;
 
@@ -79,7 +102,7 @@ export async function POST(request: Request) {
 
   const provider = getAIProvider();
 
-  // 4. Reserva Atômica de Créditos e Registro em generation_runs
+  // 6. Reserva Atômica de Créditos e Registro em generation_runs
   let run;
   try {
     run = await reserveGenerationCredits({
@@ -89,8 +112,9 @@ export async function POST(request: Request) {
       briefing: parsed.data,
       provider: provider.id,
     });
-  } catch (error: any) {
-    if (error.message === "INSUFFICIENT_CREDITS") {
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : String(error);
+    if (errMessage === "INSUFFICIENT_CREDITS") {
       return NextResponse.json(
         { error: "Saldo de créditos insuficiente" },
         { status: 402 }
@@ -102,9 +126,10 @@ export async function POST(request: Request) {
 
   // Se a requisição já havia sido concluída anteriormente (Idempotência)
   if (run.status === "completed" && run.output) {
+    const cachedOutput = run.output as Record<string, unknown>;
     return NextResponse.json(
       {
-        ...run.output,
+        ...cachedOutput,
         validation: run.validation,
         review: run.review,
         corrections: run.corrections,
@@ -115,14 +140,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // 5. Atualizar status para 'running'
+  // 7. Atualizar status para 'running'
   try {
     await markGenerationRunning(run.id);
   } catch (err) {
     console.warn("[AI carousel route] Não foi possível atualizar para running:", err);
   }
 
-  // 6. Execução do Pipeline de IA
+  // 8. Execução do Pipeline de IA
   try {
     const result = await generateCarousel(parsed.data);
 
@@ -143,7 +168,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Marca como concluído no banco de dados e registra a execução
+    // Marca como concluído no banco de dados e registra a execução com tokens e custo USD
     await completeGenerationRun({
       generationId: run.id,
       output: result.carousel,
@@ -151,20 +176,25 @@ export async function POST(request: Request) {
       validation: result.validation,
       review: result.review,
       corrections: result.corrections,
+      promptTokens: result.usage?.promptTokens,
+      completionTokens: result.usage?.completionTokens,
+      estimatedCostUsd: result.usage?.estimatedCostUsd,
     });
 
     return NextResponse.json(result, {
       headers: { "Cache-Control": "no-store" },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[AI carousel route] Erro ao gerar carrossel:", error);
+
+    const errMessage = error instanceof Error ? error.message : String(error);
 
     // Reembolso atômico em caso de exceção na geração
     try {
       await failGenerationAndRefund({
         generationId: run.id,
         errorCode: "GENERATION_ERROR",
-        errorMessage: String(error?.message || error),
+        errorMessage: errMessage,
       });
     } catch (refundErr) {
       console.error("[AI carousel route] Erro ao executar reembolso:", refundErr);

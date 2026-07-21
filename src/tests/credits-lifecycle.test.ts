@@ -3,7 +3,13 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 vi.mock("server-only", () => ({}));
 
 const mockRpc = vi.fn();
-const mockFrom = vi.fn();
+const mockFrom = vi.fn().mockImplementation(() => ({
+  select: vi.fn().mockReturnValue({
+    gte: vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+    }),
+  }),
+}));
 
 vi.mock("@/utils/supabase/admin", () => ({
   createAdminClient: () => ({
@@ -83,7 +89,7 @@ describe("Ciclo de Vida de Créditos e Geração Segura", () => {
         userId: "user-1",
         idempotencyKey: "idem-key-12345",
         credits: 10,
-        briefing: {} as any,
+        briefing: {} as unknown as GenerateCarouselInput,
       })
     ).rejects.toThrow("INSUFFICIENT_CREDITS");
   });

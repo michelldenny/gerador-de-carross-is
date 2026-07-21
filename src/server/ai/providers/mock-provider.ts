@@ -3,7 +3,7 @@ import { generateCarouselWithAI } from "@/services/mock-ai-service";
 import { aiCarouselResponseSchema } from "@/schemas";
 import type { AICarouselResponse, GenerateCarouselInput } from "@/types";
 import { selectTemplate } from "../design/template-selector";
-import type { AIProvider } from "./types";
+import type { AIProvider, ProviderGenerationResult } from "./types";
 
 function createEditorialCarousel(
   input: GenerateCarouselInput,
@@ -49,11 +49,21 @@ function createEditorialCarousel(
 
 export const mockProvider: AIProvider = {
   id: "mock",
-  async generateCarousel(input, context) {
+  async generateCarousel(input, context): Promise<ProviderGenerationResult> {
     const base = await generateCarouselWithAI(input);
     const response = input.editorialMode === "editorial"
       ? createEditorialCarousel(input, base)
       : base;
-    return context.parseResponse(response);
+    const carousel = context.parseResponse(response);
+    return {
+      carousel,
+      usage: {
+        promptTokens: 1200,
+        completionTokens: 800,
+        totalTokens: 2000,
+        estimatedCostUsd: 0,
+      },
+      model: "mock-v1",
+    };
   },
 };

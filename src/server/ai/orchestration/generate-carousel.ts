@@ -54,7 +54,7 @@ export async function generateCarousel(input: GenerateCarouselInput) {
   });
   const prompts = buildGenerationPrompt(input, retrievedChunks);
   const provider = getAIProvider();
-  const generated = await provider.generateCarousel(input, {
+  const generatedResult = await provider.generateCarousel(input, {
     systemPrompt: prompts.system,
     writerPrompt: prompts.writer,
     schemaName: "carousel_response",
@@ -66,9 +66,12 @@ export async function generateCarousel(input: GenerateCarouselInput) {
     timeoutMs: 45_000,
     signal: AbortSignal.timeout(45_000),
   });
+
+  const rawCarousel = generatedResult.carousel;
   let carousel = input.editorialMode === "editorial"
-    ? aiCarouselResponseSchema.parse(generated)
-    : normalizeSlides(input, generated);
+    ? aiCarouselResponseSchema.parse(rawCarousel)
+    : normalizeSlides(input, rawCarousel);
+
   let validation = validateCarousel(input, carousel);
   const corrections = [];
   for (let attempt = 1; attempt <= 2 && !validation.valid; attempt += 1) {
@@ -110,6 +113,8 @@ export async function generateCarousel(input: GenerateCarouselInput) {
     validation,
     review,
     corrections,
+    usage: generatedResult.usage,
+    model: generatedResult.model,
     approval: {
       schemaValid: true,
       deterministicallyValid: validation.valid,

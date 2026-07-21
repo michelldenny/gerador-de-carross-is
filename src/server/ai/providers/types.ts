@@ -1,5 +1,18 @@
 import type { AICarouselResponse, GenerateCarouselInput } from "@/types";
 
+export interface ProviderUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+}
+
+export interface ProviderGenerationResult {
+  carousel: AICarouselResponse;
+  usage?: ProviderUsage;
+  model: string;
+}
+
 export interface CarouselGenerationContext {
   systemPrompt: string;
   writerPrompt: string;
@@ -18,5 +31,5 @@ export interface AIProvider {
   generateCarousel(
     input: GenerateCarouselInput,
     context: CarouselGenerationContext
-  ): Promise<AICarouselResponse>;
+  ): Promise<ProviderGenerationResult>;
 }

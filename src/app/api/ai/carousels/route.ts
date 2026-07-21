@@ -80,7 +80,7 @@ export async function POST(request: Request) {
           p_credits: generationCost(input),
           p_briefing: json(input),
           p_provider: provider.id,
-          p_model: provider.id === "gemini" ? (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite") : "mock",
+          p_model: provider.id === "gemini" ? (process.env.GEMINI_MODEL === "gemini-2.5-flash" ? "gemini-3.5-flash-lite" : (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite")) : "mock",
         });
         if (!reserveError && generation) {
           generationId = generation.id;

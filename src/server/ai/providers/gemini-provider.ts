@@ -104,7 +104,10 @@ export class GeminiProvider implements AIProvider {
       throw new Error("GEMINI_API_KEY não configurada no ambiente server-side");
     }
 
-    const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+    let model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+    if (model === "gemini-2.5-flash") {
+      model = "gemini-3.5-flash-lite";
+    }
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const payload = {

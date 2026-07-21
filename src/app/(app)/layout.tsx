@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import { useUiStore, useCreditsStore, useProjectsStore, useBrandsStore } from "@/stores";
 import {
   LayoutDashboard,
@@ -20,10 +21,12 @@ import {
   Plus,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -42,6 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     // Carregar marcas e projetos do Supabase na inicialização do App
     useBrandsStore.getState().fetchBrands();
     useProjectsStore.getState().fetchProjects();
+    useCreditsStore.getState().fetchCredits();
   }, []);
 
   // Fechar sidebar de mobile ao navegar
@@ -260,6 +264,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Coins size={14} className="text-amber-600" />
               <span>{credits} créditos</span>
             </div>
+            <button
+              onClick={async () => {
+                await createClient().auth.signOut();
+                router.replace("/login");
+                router.refresh();
+              }}
+              className="p-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-700"
+              title="Sair"
+              aria-label="Sair"
+            >
+              <LogOut size={18} />
+            </button>
 
             {/* Notifications */}
             <div className="relative">

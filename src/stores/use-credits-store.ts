@@ -1,37 +1,23 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { safeStorage } from "./storage";
+import { createClient } from "@/utils/supabase/client";
 
 interface CreditsState {
   credits: number;
   hasHydrated: boolean;
-  setHasHydrated: (state: boolean) => void;
-  consumeCredits: (amount: number) => boolean;
-  addCredits: (amount: number) => void;
+  isLoading: boolean;
+  fetchCredits: () => Promise<void>;
 }
 
-export const useCreditsStore = create<CreditsState>()(
-  persist(
-    (set, get) => ({
-      credits: 150,
-      hasHydrated: false,
-      setHasHydrated: (state) => set({ hasHydrated: state }),
-      consumeCredits: (amount) => {
-        const { credits } = get();
-        if (credits >= amount) {
-          set({ credits: credits - amount });
-          return true;
-        }
-        return false;
-      },
-      addCredits: (amount) => set((state) => ({ credits: state.credits + amount })),
-    }),
-    {
-      name: "carousel_pro_credits",
-      storage: createJSONStorage(() => safeStorage),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
-      },
-    }
-  )
-);
+export const useCreditsStore = create<CreditsState>((set) => ({
+  credits: 0,
+  hasHydrated: false,
+  isLoading: false,
+  fetchCredits: async () => {
+    set({ isLoading: true });
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return set({ credits: 0, isLoading: false, hasHydrated: true });
+    const { data, error } = await supabase.from("profiles").select("credit_balance").eq("id", user.id).single();
+    set({ credits: error ? 0 : data.credit_balance, isLoading: false, hasHydrated: true });
+  },
+}));

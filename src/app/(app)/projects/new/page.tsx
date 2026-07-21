@@ -4,11 +4,11 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useProjectsStore, useBrandsStore, useUiStore, useCreditsStore } from "@/stores";
+import { useProjectsStore, useBrandsStore, useUiStore } from "@/stores";
 import { createProjectSchema } from "@/schemas";
 import { z } from "zod";
 import { generateCarouselWithAI } from "@/services/ai-service";
-import { Project, Slide, SlideTemplateId } from "@/types";
+import { Slide } from "@/types";
 import { SlideCanvas } from "@/components/slides/slide-canvas";
 import { SlideRenderer } from "@/components/slides/slide-renderer";
 import {
@@ -124,10 +124,9 @@ const MOCK_GALLERY_IMAGES = [
 function NewProjectForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { addProject } = useProjectsStore();
+  const { fetchProjects } = useProjectsStore();
   const { brands, addBrand } = useBrandsStore();
   const { addNotification, generationProgress, generationStep, setGenerationState } = useUiStore();
-  const { consumeCredits } = useCreditsStore();
 
   const [step, setStep] = useState(1);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -327,15 +326,6 @@ function NewProjectForm() {
     setStep(5);
     setGenerationState(0, "Iniciando inteligência artificial...", true);
 
-    const cost = calculatedCredits();
-    const hasCredits = consumeCredits(cost);
-    if (!hasCredits) {
-      addNotification("Créditos Insuficientes", "Você não possui créditos para esta geração.", "warning");
-      setGenerationState(0, "", false);
-      setStep(4);
-      return;
-    }
-
     try {
       const stepsSim = [
         { progress: 15, msg: "Analisando nicho e segmento de marca..." },
@@ -346,11 +336,28 @@ function NewProjectForm() {
         { progress: 100, msg: "Finalizando formatação real do carrossel..." },
       ];
 
+      let generationBrandId = formData.brandId;
+      if (formData.saveAsBrand && formData.newBrandName) {
+        const newBrand = await addBrand({
+          name: formData.newBrandName,
+          logoText: formData.newBrandName.substring(0, 12),
+          instagramHandle: "@nova_marca",
+          primaryColor: formData.primaryColor || "#0f172a",
+          secondaryColor: formData.secondaryColor || "#64748b",
+          accentColor: formData.accentColor || "#334155",
+          backgroundColor: formData.backgroundColor || "#ffffff",
+          textColor: formData.primaryColor || "#0f172a",
+          fontFamily: formData.fontFamily || "Inter",
+          defaultCta: formData.cta,
+        });
+        generationBrandId = newBrand.id;
+      }
+
       const aiResponsePromise = generateCarouselWithAI({
         editorialMode: formData.editorialMode,
         title: formData.title,
         theme: formData.theme,
-        brandId: formData.brandId,
+        brandId: generationBrandId,
         audience: formData.audience,
         goal: formData.goal,
         tone: formData.tone,
@@ -376,111 +383,11 @@ function NewProjectForm() {
       }
 
       const generationResult = await aiResponsePromise;
-      const aiResponse = generationResult.carousel;
-      const newProjectId = `proj-${Date.now()}`;
-
-      // Salvar nova marca na store se solicitado
-      let finalBrandId = formData.brandId;
-      if (formData.saveAsBrand && formData.newBrandName) {
-        const newBrand = await addBrand({
-          name: formData.newBrandName,
-          logoText: formData.newBrandName.substring(0, 12),
-          instagramHandle: "@nova_marca",
-          primaryColor: formData.primaryColor || "#0f172a",
-          secondaryColor: formData.secondaryColor || "#64748b",
-          accentColor: formData.accentColor || "#334155",
-          backgroundColor: formData.backgroundColor || "#ffffff",
-          textColor: formData.primaryColor || "#0f172a",
-          fontFamily: formData.fontFamily || "Inter",
-          defaultCta: formData.cta,
-        });
-        finalBrandId = newBrand.id;
-      }
-
-      const brand = brands.find((b) => b.id === finalBrandId) || brands[0];
-
-      const generatedSlides: Slide[] = aiResponse.slides.map((slideSim) => {
-        let slideImg = undefined;
-        // Alocar as imagens favoritas selecionadas na etapa 3
-        if (slideSim.image?.required && !isDecideLater && selectedImages.length > 0) {
-          const selectedUrl = selectedImages[Math.floor(Math.random() * selectedImages.length)];
-          slideImg = {
-            url: selectedUrl,
-            alt: slideSim.title || "Imagem escolhida",
-            photographer: "Acervo Selecionado",
-            positionX: 50,
-            positionY: 50,
-            zoom: 100,
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-            overlayOpacity: 30,
-          };
-        } else if (slideSim.image?.required) {
-          const randomImg = MOCK_GALLERY_IMAGES[Math.floor(Math.random() * MOCK_GALLERY_IMAGES.length)];
-          slideImg = {
-            url: randomImg.url,
-            alt: slideSim.title || "Imagem decorativa",
-            photographer: "Galeria Padrão",
-            positionX: 50,
-            positionY: 50,
-            zoom: 100,
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-            overlayOpacity: 30,
-          };
-        }
-
-        return {
-          id: `slide-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-          order: slideSim.order,
-          type: slideSim.type,
-          template: slideSim.template as SlideTemplateId,
-          title: slideSim.title,
-          subtitle: slideSim.subtitle,
-          body: slideSim.body,
-          highlight: slideSim.highlight,
-          cta: slideSim.cta,
-          listItems: slideSim.listItems,
-          image: slideImg,
-          styles: {
-            backgroundColor: formData.customColors ? (formData.backgroundColor || "#ffffff") : (brand?.backgroundColor || "#ffffff"),
-            textColor: formData.customColors ? (formData.primaryColor || "#0f172a") : (brand?.textColor || "#1e293b"),
-            accentColor: formData.customColors ? (formData.accentColor || "#334155") : (brand?.primaryColor || "#7c3aed"),
-            fontFamily: formData.customColors ? (formData.fontFamily || "Inter") : (brand?.fontFamily || "Inter"),
-          },
-        };
-      });
-
-      const newProject: Project = {
-        id: newProjectId,
-        title: aiResponse.projectTitle,
-        theme: formData.theme,
-        status: "generated",
-        width: 1080,
-        height: formData.format === "vertical" ? 1350 : formData.format === "square" ? 1080 : 1920,
-        brandId: finalBrandId,
-        slides: generatedSlides,
-        caption: aiResponse.caption.text,
-        hashtags: aiResponse.caption.hashtags,
-        updatedAt: "Agora mesmo",
-        format: formData.format,
-        creationMode: formData.editorialMode,
-        generationMetadata: {
-          trace: generationResult.trace,
-          validation: generationResult.validation,
-          review: generationResult.review,
-          corrections: generationResult.corrections,
-          approval: generationResult.approval,
-          generatedAt: new Date().toISOString(),
-        },
-      };
-
-      addProject(newProject);
+      if (!generationResult.projectId) throw new Error("A geração não retornou o projeto persistido");
+      await fetchProjects();
       setGenerationState(100, "Concluído!", false);
-      addNotification("Carrossel gerado", `'${newProject.title}' está pronto no editor!`, "success");
-      router.push(`/projects/${newProjectId}/editor`);
+      addNotification("Carrossel gerado", `'${generationResult.carousel.projectTitle}' está pronto no editor!`, "success");
+      router.push(`/projects/${generationResult.projectId}/editor`);
     } catch (err) {
       console.error(err);
       addNotification("Falha na Geração", "Erro ao processar criação.", "warning");

@@ -1,30 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { useProjectsStore } from "../stores/use-projects-store";
+import { Project } from "@/types";
+import { projectsService } from "@/services/projects";
 
 vi.mock("@/services/projects", () => ({
   projectsService: {
-    getProjects: vi.fn().mockResolvedValue([]),
-    createProject: vi.fn().mockImplementation(async (proj) => ({
-      ...proj,
-      id: proj.id || "proj-mocked-id",
-      updatedAt: "Agora",
-    })),
-    updateProject: vi.fn().mockResolvedValue(undefined),
-    deleteProject: vi.fn().mockResolvedValue(undefined),
-    addSlide: vi.fn().mockImplementation(async (projId, slide) => ({
-      ...slide,
-      id: "slide-mocked-id",
-    })),
-    updateSlide: vi.fn().mockResolvedValue(undefined),
-    deleteSlide: vi.fn().mockResolvedValue(undefined),
-    reorderSlides: vi.fn().mockResolvedValue(undefined),
+    createProject: vi.fn(),
+    deleteProject: vi.fn(),
+    reorderSlides: vi.fn(),
   },
 }));
 
-import { useProjectsStore } from "../stores/use-projects-store";
-import { Project } from "@/types";
-
 describe("Testes da Store de Projetos (useProjectsStore)", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+    // Resetar estado da store de projetos
     useProjectsStore.setState({
       projects: [],
       hasHydrated: true,
@@ -75,31 +65,41 @@ describe("Testes da Store de Projetos (useProjectsStore)", () => {
 
   it("deve adicionar e deletar projetos com sucesso", async () => {
     const store = useProjectsStore.getState();
-
+    vi.mocked(projectsService.createProject).mockResolvedValue(mockProject);
+    vi.mocked(projectsService.deleteProject).mockResolvedValue();
+    
+    // Adicionar projeto
     await store.addProject(mockProject);
     expect(useProjectsStore.getState().projects).toHaveLength(1);
     expect(useProjectsStore.getState().projects[0].id).toBe("proj-1");
 
+    // Deletar projeto
     await useProjectsStore.getState().deleteProject("proj-1");
     expect(useProjectsStore.getState().projects).toHaveLength(0);
   });
 
   it("deve reordenar slides de um projeto com sucesso", async () => {
     const store = useProjectsStore.getState();
+    vi.mocked(projectsService.createProject).mockResolvedValue(mockProject);
+    vi.mocked(projectsService.reorderSlides).mockResolvedValue();
     await store.addProject(mockProject);
 
     const reversedSlides = [...mockProject.slides].reverse();
-
+    
     await useProjectsStore.getState().reorderSlides("proj-1", reversedSlides);
-
+    
     const updatedProject = useProjectsStore.getState().projects.find(p => p.id === "proj-1");
     expect(updatedProject).toBeTruthy();
     expect(updatedProject?.slides[0].id).toBe("slide-2");
-    expect(updatedProject?.slides[0].order).toBe(1);
+    expect(updatedProject?.slides[0].order).toBe(1); // deve ter atualizado a ordem física
   });
 
   it("deve duplicar um projeto alterando seu id", async () => {
     const store = useProjectsStore.getState();
+    const duplicate = { ...mockProject, id: "proj-2", title: "Projeto de Teste (Copia)" };
+    vi.mocked(projectsService.createProject)
+      .mockResolvedValueOnce(mockProject)
+      .mockResolvedValueOnce(duplicate);
     await store.addProject(mockProject);
 
     const newId = await useProjectsStore.getState().duplicateProject("proj-1");

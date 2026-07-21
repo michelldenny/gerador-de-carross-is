@@ -94,4 +94,14 @@ describe("Componente SlideRenderer - Multi Templates", () => {
     expect(screen.getByText("Layout Não Suportado")).toBeTruthy();
     expect(screen.getByText("template-inexistente")).toBeTruthy();
   });
+
+  it("aplica moldura, numeracao e progresso no perfil BrandsDecoded", () => {
+    const slide = createTestSlide("content-highlight", "Analise editorial");
+    slide.order = 4;
+    slide.styles.editorialProfile = true;
+    slide.styles.totalSlides = 9;
+    render(<SlideRenderer slide={slide} brand={mockBrand} mode="preview" />);
+    expect(screen.getByText("BrandsDecoded")).toBeTruthy();
+    expect(screen.getByText("04 / 09")).toBeTruthy();
+  });
 });

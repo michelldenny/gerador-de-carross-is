@@ -1,11 +1,37 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
+import fs from 'fs'
+import path from 'path'
 
+// Carrega as variáveis de ambiente manualmente do .env
+try {
+  const envPath = path.resolve(process.cwd(), '.env')
+  if (fs.existsSync(envPath)) {
+    const envFile = fs.readFileSync(envPath, 'utf-8')
+    envFile.split('\n').forEach((line) => {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/)
+      if (match) {
+        const key = match[1]
+        let value = (match[2] || '').trim()
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.substring(1, value.length - 1)
+        } else if (value.startsWith("'") && value.endsWith("'")) {
+          value = value.substring(1, value.length - 1)
+        }
+        process.env[key] = value
+      }
+    })
+  }
+} catch (e) {
+  console.error('Erro ao ler .env:', e)
+}
+
+const runIntegration = process.env.RUN_SUPABASE_INTEGRATION === 'true'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-describe('Testes de Isolamento de Dados (RLS) no Supabase', () => {
+describe.skipIf(!runIntegration)('Testes de Isolamento de Dados (RLS) no Supabase', () => {
   beforeAll(() => {
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(
@@ -32,31 +58,19 @@ describe('Testes de Isolamento de Dados (RLS) no Supabase', () => {
     })
 
     const rKey = Math.random().toString(36).substring(2, 8)
-    const emailA = `usera${Date.now()}${rKey}@example.com`
-    const emailB = `userb${Date.now()}${rKey}@example.com`
+    const emailA = `usera${Date.now()}${rKey}@gmail.com`
+    const emailB = `userb${Date.now()}${rKey}@gmail.com`
     const password = 'TestPassword123!'
 
     // 1. Criar Usuário A
     const { data: authA, error: errA } = await clientA.auth.signUp({ email: emailA, password })
-    if (errA) {
-      if (errA.message.includes('rate limit')) {
-        console.warn('Ignorando teste RLS devido a limite de taxa do Supabase Auth Cloud');
-        return;
-      }
-      throw errA
-    }
+    if (errA) throw errA
     const userIdA = authA.user?.id
     expect(userIdA).toBeDefined()
 
     // 2. Criar Usuário B
     const { data: authB, error: errB } = await clientB.auth.signUp({ email: emailB, password })
-    if (errB) {
-      if (errB.message.includes('rate limit')) {
-        console.warn('Ignorando teste RLS devido a limite de taxa do Supabase Auth Cloud');
-        return;
-      }
-      throw errB
-    }
+    if (errB) throw errB
     const userIdB = authB.user?.id
     expect(userIdB).toBeDefined()
 
@@ -105,12 +119,15 @@ describe('Testes de Isolamento de Dados (RLS) no Supabase', () => {
         .single()
 
       expect(errReadByA).toBeNull()
+      expect(readByA).not.toBeNull()
+      if (!readByA) throw new Error('O proprietario nao conseguiu ler o proprio projeto')
       expect(readByA.title).toBe('Projeto Secreto do A')
 
       // Limpeza: Deletar o projeto criado
       await clientA.from('projects').delete().eq('id', projectA.id)
     } finally {
-      // Limpeza
+      // Como não temos a service_role_key, não conseguimos deletar os usuários de auth.users diretamente.
+      // No entanto, limpamos o projeto inserido.
     }
-  }, 30000)
+  }, 30000) // Aumentando o timeout para 30s devido a chamadas de rede do Supabase
 })

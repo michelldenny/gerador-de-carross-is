@@ -7,9 +7,12 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
@@ -28,8 +31,8 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // IMPORTANTE: Não remova este getSession() / getUser() call. É necessário para atualizar o token de sessão.
-  await supabase.auth.getUser()
+  const { data } = await supabase.auth.getUser()
+  const user = data?.user ?? null
 
-  return supabaseResponse
+  return { response: supabaseResponse, user }
 }

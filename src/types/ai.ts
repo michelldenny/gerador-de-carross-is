@@ -88,6 +88,8 @@ export interface GenerationTrace {
 }
 
 export interface GenerateCarouselResult {
+  projectId?: string;
+  runId?: string;
   carousel: AICarouselResponse;
   validation: CarouselValidationResult;
   review: EditorialReview;

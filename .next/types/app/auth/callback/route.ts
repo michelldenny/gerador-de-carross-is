@@ -1,4 +1,4 @@
-// File: C:\Users\miche\Downloads\gerador-de-carross-is-main\gerador-de-carross-is-main\src\app\auth\callback\route.ts
+// File: C:\Users\miche\Desktop\gerador-de-carross-is\src\app\auth\callback\route.ts
 import * as entry from '../../../../../src/app/auth/callback/route.js'
 import type { NextRequest } from 'next/server.js'
 

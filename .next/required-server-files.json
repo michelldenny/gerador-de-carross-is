@@ -104,7 +104,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\miche\\Downloads\\gerador-de-carross-is-main\\gerador-de-carross-is-main",
+    "outputFileTracingRoot": "C:\\Users\\miche\\Desktop\\gerador-de-carross-is",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -294,10 +294,10 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "C:\\Users\\miche\\Downloads\\gerador-de-carross-is-main\\gerador-de-carross-is-main"
+      "root": "C:\\Users\\miche\\Desktop\\gerador-de-carross-is"
     }
   },
-  "appDir": "C:\\Users\\miche\\Downloads\\gerador-de-carross-is-main\\gerador-de-carross-is-main",
+  "appDir": "C:\\Users\\miche\\Desktop\\gerador-de-carross-is",
   "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",

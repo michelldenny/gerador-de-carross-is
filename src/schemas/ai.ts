@@ -23,6 +23,7 @@ export const generateCarouselInputSchema = z
     accentColor: z.string().trim().max(30).optional(),
     backgroundColor: z.string().trim().max(30).optional(),
     fontFamily: z.string().trim().max(100).optional(),
+    idempotencyKey: z.string().trim().min(8).max(128).optional(),
   })
   .superRefine((input, context) => {
     if (input.editorialMode === "editorial" && input.slideCount !== 9) {

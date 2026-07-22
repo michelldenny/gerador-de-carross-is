@@ -25,6 +25,8 @@ export interface SlideStyles {
   titleSize?: number;
   bodySize?: number;
   alignment?: "left" | "center" | "right";
+  editorialProfile?: boolean;
+  totalSlides?: number;
 }
 
 export type SlideType = "cover" | "content" | "comparison" | "quote" | "cta";

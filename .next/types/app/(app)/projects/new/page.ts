@@ -1,4 +1,4 @@
-// File: C:\Users\miche\Desktop\gerador-de-carross-is\src\app\(app)\projects\new\page.tsx
+// File: C:\Users\miche\Downloads\gerador-de-carross-is-main\gerador-de-carross-is-main\src\app\(app)\projects\new\page.tsx
 import * as entry from '../../../../../../src/app/(app)/projects/new/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

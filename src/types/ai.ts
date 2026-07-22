@@ -24,6 +24,14 @@ export interface GenerateCarouselInput {
   accentColor?: string;
   backgroundColor?: string;
   fontFamily?: string;
+  evidence?: Array<{
+    id: string;
+    claim: string;
+    sourceTitle: string;
+    sourceUrl: string;
+    publisher?: string;
+    publicationDate?: string;
+  }>;
 }
 
 export interface ValidationViolation {
@@ -89,7 +97,8 @@ export interface GenerationTrace {
 
 export interface GenerateCarouselResult {
   projectId?: string;
-  runId?: string;
+  generationId?: string;
+  deliveryStatus?: "approved" | "draft_needs_review";
   carousel: AICarouselResponse;
   validation: CarouselValidationResult;
   review: EditorialReview;

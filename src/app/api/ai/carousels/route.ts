@@ -5,6 +5,7 @@ import { generateCarousel } from "@/server/ai/orchestration/generate-carousel";
 import { getAIProvider } from "@/server/ai/providers/provider-factory";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { classifyGenerationDelivery } from "@/server/ai/delivery/classify-generation";
 
 export const runtime = "nodejs";
 const MAX_REQUEST_BYTES = 32_000;
@@ -84,6 +85,14 @@ export async function POST(request: Request) {
         });
         if (!reserveError && generation) {
           generationId = generation.id;
+          if (generation.status === "completed" && generation.output && typeof generation.output === "object") {
+            return NextResponse.json({
+              idempotent: true,
+              ...(generation.output as Record<string, Json>),
+              generationId: generation.id,
+              projectId: generation.project_id,
+            }, { headers: { "Cache-Control": "no-store" } });
+          }
         } else if (reserveError) {
           console.warn("[AI route] Aviso na RPC de créditos:", reserveError.message);
         }
@@ -94,9 +103,7 @@ export async function POST(request: Request) {
 
     // 2. Gerar carrossel via orquestrador de IA
     const result = await generateCarousel(input);
-    if (!result.validation.valid || (input.editorialMode === "editorial" && !result.review.approved)) {
-      throw Object.assign(new Error("Conteúdo reprovado pelos validadores de qualidade"), { code: "CONTENT_REJECTED", result });
-    }
+    const deliveryStatus = classifyGenerationDelivery(input, result);
 
     // 3. Persistir o projeto se admin disponível
     if (admin) {
@@ -104,10 +111,10 @@ export async function POST(request: Request) {
         const validBrandId = /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(input.brandId) ? input.brandId : null;
         const { data: project, error: projectError } = await admin.from("projects").insert({
           user_id: userId, brand_id: validBrandId, title: result.carousel.projectTitle, theme: input.theme,
-          status: "generated", creation_mode: input.editorialMode, format: input.format,
+          status: deliveryStatus === "approved" ? "generated" : "draft", creation_mode: input.editorialMode, format: input.format,
           width: 1080, height: input.format === "vertical" ? 1350 : input.format === "square" ? 1080 : 1920,
           caption: result.carousel.caption.text, hashtags: result.carousel.caption.hashtags,
-          generation_metadata: json({ trace: result.trace, validation: result.validation, review: result.review, corrections: result.corrections, approval: result.approval, generatedAt: new Date().toISOString() }),
+          generation_metadata: json({ trace: result.trace, validation: result.validation, review: result.review, corrections: result.corrections, approval: result.approval, deliveryStatus, generatedAt: new Date().toISOString() }),
         }).select("id").single();
 
         if (project && !projectError) {
@@ -133,7 +140,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ ...result, projectId, generationId }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ...result, deliveryStatus, projectId, generationId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error: unknown) {
     if (admin) {
       if (projectId) {
@@ -150,14 +157,13 @@ export async function POST(request: Request) {
       }
     }
 
-    const rejected = error instanceof Error && "code" in error && error.code === "CONTENT_REJECTED";
     const errorMessage = error instanceof Error ? error.message : "Falha ao gerar carrossel";
 
     console.error("[AI carousel route Error]:", error);
 
     return NextResponse.json(
-      rejected ? { error: errorMessage, ...(error as { result?: object }).result } : { error: errorMessage },
-      { status: rejected ? 422 : 500 }
+      { error: errorMessage },
+      { status: 500 }
     );
   }
 }

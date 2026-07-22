@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { GenerateCarouselInput } from "@/types";
 
 vi.mock("server-only", () => ({}));
 

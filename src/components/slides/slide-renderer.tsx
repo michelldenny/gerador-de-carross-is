@@ -26,6 +26,33 @@ export function SlideRenderer({
   onSelectElement,
   mode = "preview",
 }: SlideRendererProps) {
+  if (slide.styles.editorialProfile) {
+    const dark = slide.order === 1 || slide.order % 2 === 0;
+    const framedSlide: Slide = {
+      ...slide,
+      styles: {
+        ...slide.styles,
+        editorialProfile: false,
+        backgroundColor: dark ? "#111315" : "#f4f0e8",
+        textColor: dark ? "#f7f3eb" : "#151515",
+        accentColor: "#ef3f32",
+        fontFamily: "Barlow Condensed",
+      },
+    };
+    const total = slide.styles.totalSlides || 9;
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-[#111315]">
+        <SlideRenderer slide={framedSlide} brand={brand} selectedElementId={selectedElementId} onSelectElement={onSelectElement} mode={mode} />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-30 w-3 bg-[#ef3f32]" />
+        <div className="pointer-events-none absolute left-10 right-10 top-8 z-30 flex items-center justify-between text-[13px] font-black uppercase tracking-[0.28em]" style={{ color: dark ? "#f7f3eb" : "#151515" }}>
+          <span>BrandsDecoded</span><span>{String(slide.order).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
+        </div>
+        <div className="pointer-events-none absolute bottom-0 left-3 right-0 z-30 h-2 bg-black/15">
+          <div className="h-full bg-[#ef3f32]" style={{ width: `${Math.min(100, (slide.order / total) * 100)}%` }} />
+        </div>
+      </div>
+    );
+  }
   // Chavear os templates com base no slide.template
   switch (slide.template) {
     case "cover-image":

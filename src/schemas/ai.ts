@@ -23,7 +23,14 @@ export const generateCarouselInputSchema = z
     accentColor: z.string().trim().max(30).optional(),
     backgroundColor: z.string().trim().max(30).optional(),
     fontFamily: z.string().trim().max(100).optional(),
-    idempotencyKey: z.string().trim().min(8).max(128).optional(),
+    evidence: z.array(z.object({
+      id: z.string().trim().min(1).max(100),
+      claim: z.string().trim().min(3).max(500),
+      sourceTitle: z.string().trim().min(1).max(300),
+      sourceUrl: z.string().url().max(2_000),
+      publisher: z.string().trim().max(200).optional(),
+      publicationDate: z.string().trim().max(40).optional(),
+    })).max(20).optional(),
   })
   .superRefine((input, context) => {
     if (input.editorialMode === "editorial" && input.slideCount !== 9) {

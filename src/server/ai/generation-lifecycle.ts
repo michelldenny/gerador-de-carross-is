@@ -98,7 +98,7 @@ export async function completeGenerationRun(params: {
 
   const rpcArgs: Database["public"]["Functions"]["complete_generation"]["Args"] = {
     p_generation_id: params.generationId,
-    p_project_id: params.projectId ?? null,
+    p_project_id: params.projectId as string,
     p_output: params.output as Json,
     p_trace: params.trace as Json,
     p_validation: params.validation as Json,

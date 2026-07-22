@@ -3,32 +3,24 @@ import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 
 export async function createClient() {
-  let cookieStore: Awaited<ReturnType<typeof cookies>> | undefined;
-  try {
-    cookieStore = await cookies();
-  } catch {
-    // Fora do contexto de requisição HTTP (ex: testes unitários)
-  }
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+  const cookieStore = await cookies()
 
   return createServerClient<Database>(
-    url,
-    anonKey,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookieStore ? cookieStore.getAll() : []
+          return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
-          if (!cookieStore) return
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Ignorado em Server Components
+            // O método setAll pode ser chamado a partir de um Server Component.
+            // Isso pode ser ignorado se você tiver um middleware atualizando as sessões.
           }
         },
       },

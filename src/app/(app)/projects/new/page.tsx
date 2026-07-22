@@ -386,7 +386,14 @@ function NewProjectForm() {
       if (!generationResult.projectId) throw new Error("A geração não retornou o projeto persistido");
       await fetchProjects();
       setGenerationState(100, "Concluído!", false);
-      addNotification("Carrossel gerado", `'${generationResult.carousel.projectTitle}' está pronto no editor!`, "success");
+      const needsReview = generationResult.deliveryStatus === "draft_needs_review";
+      addNotification(
+        needsReview ? "Carrossel criado como rascunho" : "Carrossel gerado",
+        needsReview
+          ? `'${generationResult.carousel.projectTitle}' está no editor com sugestões de revisão.`
+          : `'${generationResult.carousel.projectTitle}' está pronto no editor!`,
+        needsReview ? "warning" : "success"
+      );
       router.push(`/projects/${generationResult.projectId}/editor`);
     } catch (err: unknown) {
       console.error(err);

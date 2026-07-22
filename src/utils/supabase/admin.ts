@@ -1,22 +1,14 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !serviceKey) {
-    throw new Error(
-      "Variáveis de ambiente do Supabase não configuradas (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)."
-    );
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) {
+    throw new Error("Configuracao server-side do Supabase ausente");
   }
-
-  return createClient<Database>(url, serviceKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
+  return createClient<Database>(url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 }
